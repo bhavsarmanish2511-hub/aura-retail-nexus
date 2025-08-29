@@ -26,7 +26,7 @@ export const ProductDetail: React.FC<ProductDetailProps> = ({
       />
       
       {/* Modal Content */}
-      <div className="relative w-full max-w-md glassmorphism rounded-2xl border border-primary/30 overflow-hidden">
+      <div className="relative w-full max-w-md max-h-[90vh] glassmorphism rounded-2xl border border-primary/30 overflow-hidden flex flex-col">
         {/* Header */}
         <div className="relative h-64 bg-gradient-to-br from-card/50 to-card/30">
           <img 
@@ -45,29 +45,44 @@ export const ProductDetail: React.FC<ProductDetailProps> = ({
             <X className="h-4 w-4" />
           </Button>
 
-          {/* Holographic QR Display */}
+          {/* Enhanced Holographic QR Display - Bigger and Blinking */}
           <div className="absolute bottom-4 left-4 right-4">
-            <div className="glassmorphism rounded-xl p-3 border border-primary/30">
-              <div className="flex items-center gap-3">
-                <div className="h-16 w-16 bg-primary/10 rounded-lg border border-primary/30 flex items-center justify-center">
-                  <div className="h-12 w-12 bg-gradient-to-br from-primary to-secondary rounded animate-pulse-neon" />
+            <div className="glassmorphism rounded-xl p-4 border-2 border-primary/50 animate-glow">
+              <div className="flex items-center gap-4">
+                <div className="relative h-24 w-24 bg-primary/10 rounded-xl border-2 border-primary/50 flex items-center justify-center animate-blink">
+                  <div className="absolute inset-0 bg-gradient-to-br from-primary to-secondary rounded-xl opacity-30 animate-pulse" />
+                  <div className="h-20 w-20 bg-gradient-to-br from-primary via-secondary to-accent rounded-lg animate-pulse-neon" />
+                  <div className="absolute inset-0 flex items-center justify-center">
+                    <div className="grid grid-cols-3 gap-1">
+                      {[...Array(9)].map((_, i) => (
+                        <div key={i} className="h-4 w-4 bg-white/80 rounded-sm" />
+                      ))}
+                    </div>
+                  </div>
                 </div>
                 <div className="flex-1">
-                  <p className="text-xs text-muted-foreground">Digital Product Passport</p>
-                  <p className="text-sm font-mono text-primary">#DPP-{product.id}</p>
+                  <p className="text-sm font-semibold text-primary animate-pulse">Digital Product Passport</p>
+                  <p className="text-lg font-mono text-neon-cyan font-bold">#DPP-{product.id}</p>
+                  <p className="text-xs text-muted-foreground mt-1">Tap to scan blockchain journey</p>
                 </div>
               </div>
             </div>
           </div>
         </div>
 
-        {/* Content */}
-        <div className="p-6 space-y-4">
+        {/* Scrollable Content */}
+        <div className="p-6 space-y-4 overflow-y-auto flex-1 custom-scrollbar">
           <div>
             <h2 className="text-2xl font-bold text-foreground font-orbitron">{product.name}</h2>
-            <div className="flex items-baseline gap-2 mt-2">
-              <span className="text-3xl font-bold text-neon-cyan">₿{product.price}</span>
-              <span className="text-sm text-muted-foreground">Credits</span>
+            <div className="space-y-2 mt-2">
+              <div className="flex items-baseline gap-2">
+                <span className="text-3xl font-bold text-neon-cyan">₿{product.price}</span>
+                <span className="text-sm text-muted-foreground">Credits</span>
+              </div>
+              <div className="flex items-baseline gap-2">
+                <span className="text-xl font-bold text-foreground">${product.priceUSD}</span>
+                <span className="text-sm text-muted-foreground">USD</span>
+              </div>
             </div>
           </div>
 

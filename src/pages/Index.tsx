@@ -75,9 +75,13 @@ const Index = () => {
 
   const handlePaymentConfirm = (paymentMethod: string, deliveryMethod: string) => {
     console.log('Payment confirmed:', { paymentMethod, deliveryMethod });
+    // Clear the cart after successful order
+    setCart([]);
+    setCurrentScreen('catalog');
   };
 
   const cartTotal = cart.reduce((sum, item) => sum + (item.product.price * item.quantity), 0);
+  const cartTotalUSD = cart.reduce((sum, item) => sum + (item.product.priceUSD * item.quantity), 0);
   const cartItemsCount = cart.reduce((sum, item) => sum + item.quantity, 0);
 
   return (
@@ -189,6 +193,7 @@ const Index = () => {
 
               <PaymentScreen
                 total={cartTotal}
+                totalUSD={cartTotalUSD}
                 onConfirm={handlePaymentConfirm}
               />
             </>

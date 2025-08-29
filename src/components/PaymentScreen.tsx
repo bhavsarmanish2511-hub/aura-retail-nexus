@@ -5,10 +5,11 @@ import { cn } from '@/lib/utils';
 
 interface PaymentScreenProps {
   total: number;
+  totalUSD: number;
   onConfirm: (paymentMethod: string, deliveryMethod: string) => void;
 }
 
-export const PaymentScreen: React.FC<PaymentScreenProps> = ({ total, onConfirm }) => {
+export const PaymentScreen: React.FC<PaymentScreenProps> = ({ total, totalUSD, onConfirm }) => {
   const [selectedPayment, setSelectedPayment] = useState('crypto');
   const [selectedDelivery, setSelectedDelivery] = useState('humanoid');
   const [isProcessing, setIsProcessing] = useState(false);

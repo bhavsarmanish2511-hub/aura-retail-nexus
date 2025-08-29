@@ -7,6 +7,7 @@ export interface Product {
   id: string;
   name: string;
   price: number;
+  priceUSD: number;
   image: string;
   category: string;
   description: string;
@@ -59,9 +60,15 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product, onQRClick, on
           <h3 className="text-lg font-bold text-foreground font-orbitron">{product.name}</h3>
           
           {/* Price with futuristic currency */}
-          <div className="flex items-baseline gap-2">
-            <span className="text-2xl font-bold text-neon-cyan">₿{product.price}</span>
-            <span className="text-xs text-muted-foreground">Credits</span>
+          <div className="space-y-1">
+            <div className="flex items-baseline gap-2">
+              <span className="text-2xl font-bold text-neon-cyan">₿{product.price}</span>
+              <span className="text-xs text-muted-foreground">Credits</span>
+            </div>
+            <div className="flex items-baseline gap-1">
+              <span className="text-sm font-semibold text-foreground">${product.priceUSD}</span>
+              <span className="text-xs text-muted-foreground">USD</span>
+            </div>
           </div>
 
           {/* Sustainability Score */}

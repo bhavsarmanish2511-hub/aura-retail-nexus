@@ -23,6 +23,7 @@ export const CartView: React.FC<CartViewProps> = ({
   onCheckout 
 }) => {
   const total = items.reduce((sum, item) => sum + (item.product.price * item.quantity), 0);
+  const totalUSD = items.reduce((sum, item) => sum + (item.product.priceUSD * item.quantity), 0);
 
   return (
     <div className="space-y-4">
@@ -52,9 +53,15 @@ export const CartView: React.FC<CartViewProps> = ({
                 {/* Product Info */}
                 <div className="flex-1 space-y-2">
                   <h3 className="font-semibold text-foreground">{item.product.name}</h3>
-                  <div className="flex items-baseline gap-2">
-                    <span className="text-lg font-bold text-neon-cyan">₿{item.product.price}</span>
-                    <span className="text-xs text-muted-foreground">Credits</span>
+                  <div className="space-y-1">
+                    <div className="flex items-baseline gap-2">
+                      <span className="text-lg font-bold text-neon-cyan">₿{item.product.price}</span>
+                      <span className="text-xs text-muted-foreground">Credits</span>
+                    </div>
+                    <div className="flex items-baseline gap-1">
+                      <span className="text-sm font-semibold text-foreground">${item.product.priceUSD}</span>
+                      <span className="text-xs text-muted-foreground">USD</span>
+                    </div>
                   </div>
 
                   {/* Quantity Controls */}
@@ -109,7 +116,10 @@ export const CartView: React.FC<CartViewProps> = ({
             <div className="h-px bg-border/30 my-2" />
             <div className="flex justify-between">
               <span className="font-semibold text-foreground">Total</span>
-              <span className="text-xl font-bold text-neon-cyan">₿{total} Credits</span>
+              <div className="text-right">
+                <div className="text-xl font-bold text-neon-cyan">₿{total} Credits</div>
+                <div className="text-sm font-semibold text-foreground">${totalUSD} USD</div>
+              </div>
             </div>
           </div>
 
