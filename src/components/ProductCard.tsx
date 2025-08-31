@@ -41,12 +41,15 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product, onQRClick, on
           />
           <div className="absolute inset-0 bg-gradient-to-t from-background/60 to-transparent" />
           
-          {/* QR Code Badge */}
+          {/* QR Code Badge - Bigger and Blinking */}
           <button
             onClick={() => onQRClick(product)}
-            className="absolute top-3 right-3 bg-background/80 backdrop-blur-md p-2 rounded-lg border border-primary/30 hover:border-primary hover:bg-primary/20 transition-all duration-300 group/qr"
+            className="absolute top-3 right-3 bg-white/95 backdrop-blur-md p-3 rounded-xl border-2 border-primary/50 hover:border-primary hover:bg-primary/20 transition-all duration-300 group/qr shadow-lg hover:shadow-neon"
           >
-            <QrCode className="h-5 w-5 text-primary group-hover/qr:animate-pulse" />
+            <QrCode className="h-8 w-8 text-primary animate-blink" />
+            <span className="absolute -bottom-5 right-0 text-xs font-bold bg-primary text-primary-foreground px-2 py-0.5 rounded-full animate-pulse-neon">
+              DPP
+            </span>
           </button>
 
           {/* Category Badge */}

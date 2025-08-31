@@ -71,7 +71,7 @@ export const ProductDetail: React.FC<ProductDetailProps> = ({
         </div>
 
         {/* Scrollable Content */}
-        <div className="p-6 space-y-4 overflow-y-auto flex-1 custom-scrollbar">
+        <div className="p-6 space-y-4 overflow-y-auto flex-1" style={{ maxHeight: "calc(90vh - 256px)" }}>
           <div>
             <h2 className="text-2xl font-bold text-foreground font-orbitron">{product.name}</h2>
             <div className="space-y-2 mt-2">

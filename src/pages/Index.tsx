@@ -76,8 +76,9 @@ const Index = () => {
   const handlePaymentConfirm = (paymentMethod: string, deliveryMethod: string) => {
     console.log('Payment confirmed:', { paymentMethod, deliveryMethod });
     // Clear the cart after successful order
-    setCart([]);
-    setCurrentScreen('catalog');
+    setTimeout(() => {
+      setCart([]);
+    }, 2500); // Clear cart after confirmation animation
   };
 
   const cartTotal = cart.reduce((sum, item) => sum + (item.product.price * item.quantity), 0);
