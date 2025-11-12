@@ -199,6 +199,28 @@ export function WorkflowProcessor({
     },
   ];
 
+  // Generate dynamic context based on executed actions
+  const generateActionContext = () => {
+    if (executedActions.length === 0) return null;
+    
+    const contexts = executedActions.map((action, idx) => {
+      const dataset = workflowDatasets[idx];
+      return {
+        strategy: action.action,
+        description: action.description,
+        cost: action.cost,
+        timeline: action.timeline,
+        impact: action.impact || "Not specified",
+        product: dataset?.productName || "Product",
+        hsn: dataset?.productHSN || "N/A",
+        sku: dataset?.productSKU || "N/A",
+        qty: dataset?.requiredQty || "0"
+      };
+    });
+    
+    return contexts;
+  };
+
   // Auto-start workflow when component mounts
   useEffect(() => {
     const timer = setTimeout(() => {
@@ -226,13 +248,32 @@ export function WorkflowProcessor({
     setWorkflowStatus("processing");
     setIsProcessing(true);
 
-    // Initial orchestrator message with action context
-    await new Promise((resolve) => setTimeout(resolve, 500));
-    const actionNames = executedActions.map(a => a.action).join(", ");
-    const actionContext = executedActions.length > 0 ? ` for executed strategies: ${actionNames}` : "";
-    addChatMessage(`Hello! I'm analyzing purchase orders for consolidated workflow processing${actionContext}. Processing ${workflowDatasets.length} strategy execution${workflowDatasets.length !== 1 ? 's' : ''}.`, "assistant", "orchestrator");
+    const actionContexts = generateActionContext();
 
-    // Add orchestrator actions progressively
+    // Dynamic initial orchestrator message based on selected actions
+    await new Promise((resolve) => setTimeout(resolve, 500));
+    
+    if (actionContexts && actionContexts.length > 0) {
+      const strategyList = actionContexts.map((ctx, idx) => `${idx + 1}. ${ctx.strategy}`).join("\n");
+      addChatMessage(
+        `Hello! I'm the Orchestrator Agent analyzing your selected mitigation strategies:\n\n${strategyList}\n\nI will now coordinate multi-agent workflow execution to implement these strategies. Total strategies: ${actionContexts.length}`,
+        "assistant",
+        "orchestrator"
+      );
+      
+      await new Promise((resolve) => setTimeout(resolve, 800));
+      addChatMessage(
+        `**Strategy Analysis:**\n${actionContexts.map((ctx, idx) => 
+          `\n**Strategy ${idx + 1}: ${ctx.strategy}**\n- Cost: ${ctx.cost}\n- Timeline: ${ctx.timeline}\n- Expected Impact: ${ctx.impact}\n- Target Product: ${ctx.product} (HSN: ${ctx.hsn})`
+        ).join('\n')}`,
+        "assistant",
+        "orchestrator"
+      );
+    } else {
+      addChatMessage(`Hello! I'm analyzing purchase orders for workflow processing. No specific strategies selected yet.`, "assistant", "orchestrator");
+    }
+
+    // Add orchestrator actions progressively with dynamic context
     for (let i = 0; i < orchestratorSteps.length; i++) {
       await new Promise((resolve) => setTimeout(resolve, 800));
       
@@ -253,46 +294,101 @@ export function WorkflowProcessor({
         await new Promise((resolve) => setTimeout(resolve, 600));
         addToolAgentOutput(0);
         await new Promise((resolve) => setTimeout(resolve, 400));
-        addChatMessage(`I've extracted the details from the PO. Product: ${productName}, HSN Code: ${productHSN}, Quantity: ${requiredQty} metric tons. Now checking the STP document...`, "assistant", "tool");
+        
+        if (actionContexts && actionContexts.length > 0) {
+          const ctx = actionContexts[0];
+          addChatMessage(
+            `📄 **Document Analysis Complete**\n\nI've extracted procurement requirements aligned with your selected strategy "${ctx.strategy}":\n\n- Product: ${ctx.product}\n- HSN Code: ${ctx.hsn}\n- Required Quantity: ${ctx.qty} metric tons\n- Timeline Constraint: ${ctx.timeline}\n\nProceeding to validate against Standard Technical Procedures...`,
+            "assistant",
+            "tool"
+          );
+        } else {
+          addChatMessage(`I've extracted the details from the PO. Product: ${productName}, HSN Code: ${productHSN}, Quantity: ${requiredQty} metric tons. Now checking the STP document...`, "assistant", "tool");
+        }
       } else if (i === 3) {
         await new Promise((resolve) => setTimeout(resolve, 600));
         addToolAgentOutput(1);
         await new Promise((resolve) => setTimeout(resolve, 400));
-        addChatMessage(`Found the STP document at: /documents/STP_${productHSN.replace(/\./g, "_")}_v2.3.pdf. Let me parse the material requirements...`, "assistant", "tool");
+        addChatMessage(`🔍 **STP Document Located**\n\nFound technical specification document at: /documents/STP_${productHSN.replace(/\./g, "_")}_v2.3.pdf\n\nParsing material composition and consumable requirements...`, "assistant", "tool");
       } else if (i === 4) {
         await new Promise((resolve) => setTimeout(resolve, 600));
         addToolAgentOutput(2);
         await new Promise((resolve) => setTimeout(resolve, 400));
-        addChatMessage(`The STP requires: ${insufficientItem} (${Math.floor(Number(requiredQty) * 0.6)} metric tons) and ${sufficientItem} (${Math.floor(Number(requiredQty) * 0.4)} metric tons). Checking inventory levels with the Inventory Agent...`, "assistant", "orchestrator");
+        
+        if (actionContexts && actionContexts.length > 0) {
+          addChatMessage(
+            `📋 **STP Requirements Parsed**\n\nMaterial breakdown for strategy execution:\n- Primary Component: ${insufficientItem} (${Math.floor(Number(requiredQty) * 0.6)} metric tons)\n- Secondary Component: ${sufficientItem} (${Math.floor(Number(requiredQty) * 0.4)} metric tons)\n\nInitiating inventory validation with Inventory Management Agent...`,
+            "assistant",
+            "orchestrator"
+          );
+        } else {
+          addChatMessage(`The STP requires: ${insufficientItem} (${Math.floor(Number(requiredQty) * 0.6)} metric tons) and ${sufficientItem} (${Math.floor(Number(requiredQty) * 0.4)} metric tons). Checking inventory levels with the Inventory Agent...`, "assistant", "orchestrator");
+        }
       } else if (i === 5) {
         await new Promise((resolve) => setTimeout(resolve, 600));
         addToolAgentOutput(3);
         await new Promise((resolve) => setTimeout(resolve, 400));
-        addChatMessage(`Current inventory shows ${insufficientItem}: 0 metric tons (Insufficient ⚠️), ${sufficientItem}: ${Math.floor(Number(requiredQty) * 0.5)} metric tons (Sufficient ✓)`, "assistant", "inventory");
+        
+        if (actionContexts && actionContexts.length > 0) {
+          const ctx = actionContexts[0];
+          addChatMessage(
+            `📊 **Inventory Status Report**\n\nCurrent stock levels:\n- ${insufficientItem}: 0 metric tons ⚠️ **CRITICAL SHORTAGE**\n- ${sufficientItem}: ${Math.floor(Number(requiredQty) * 0.5)} metric tons ✅ **SUFFICIENT**\n\n⚠️ Identified gap conflicts with strategy "${ctx.strategy}" timeline (${ctx.timeline}). Escalating to Procurement Agent for emergency sourcing...`,
+            "assistant",
+            "inventory"
+          );
+        } else {
+          addChatMessage(`Current inventory shows ${insufficientItem}: 0 metric tons (Insufficient ⚠️), ${sufficientItem}: ${Math.floor(Number(requiredQty) * 0.5)} metric tons (Sufficient ✓)`, "assistant", "inventory");
+        }
+        
         await new Promise((resolve) => setTimeout(resolve, 800));
-        addChatMessage(`I see we're missing ${insufficientItem}. Let me coordinate with the Procurement Agent to place an order...`, "assistant", "orchestrator");
+        
+        if (actionContexts && actionContexts.length > 0) {
+          addChatMessage(
+            `🔄 **Orchestrator Decision**\n\nBased on inventory gap analysis, coordinating with Procurement Agent to execute emergency material acquisition. This action directly supports the strategy implementation timeline.`,
+            "assistant",
+            "orchestrator"
+          );
+        } else {
+          addChatMessage(`I see we're missing ${insufficientItem}. Let me coordinate with the Procurement Agent to place an order...`, "assistant", "orchestrator");
+        }
       } else if (i === 6) {
         await new Promise((resolve) => setTimeout(resolve, 600));
         addToolAgentOutput(4);
         await new Promise((resolve) => setTimeout(resolve, 400));
-        addChatMessage(`Order placed successfully! Order ID: ${orderId} for ${Math.floor(Number(requiredQty) * 0.8)} metric tons of ${insufficientItem}.`, "assistant", "procurement");
+        
+        if (actionContexts && actionContexts.length > 0) {
+          const ctx = actionContexts[0];
+          addChatMessage(
+            `✅ **Procurement Order Confirmed**\n\n**Order Details:**\n- Order ID: ${orderId}\n- Material: ${insufficientItem}\n- Quantity: ${Math.floor(Number(requiredQty) * 0.8)} metric tons\n- Estimated Cost Impact: ${ctx.cost}\n- Delivery Alignment: ${ctx.timeline}\n\n📦 This procurement directly supports strategy: "${ctx.strategy}"\n\nOrder tracking activated. Supplier coordination in progress.`,
+            "assistant",
+            "procurement"
+          );
+        } else {
+          addChatMessage(`Order placed successfully! Order ID: ${orderId} for ${Math.floor(Number(requiredQty) * 0.8)} metric tons of ${insufficientItem}.`, "assistant", "procurement");
+        }
       }
     }
 
-    // Add final response to chat
+    // Dynamic final response based on selected strategies
     await new Promise((resolve) => setTimeout(resolve, 1000));
     
-    addChatMessage(`**Final Summary:**
-
-✅ **Action Taken:** An order has been placed for ${Math.floor(Number(requiredQty) * 0.8)} metric tons of ${productName} SKU (${insufficientItem}) to fulfill the requirement.
-
-📦 **Order ID:** ${orderId}
-
-📍 **Product:** ${productName} (HSN: ${productHSN})
-
-⏳ **Status:** The PO can be processed once the ordered item is received.
-
-If you have any further questions or need additional assistance, please let me know!`, "assistant", "orchestrator");
+    if (actionContexts && actionContexts.length > 0) {
+      const summaryText = actionContexts.map((ctx, idx) => 
+        `\n**Strategy ${idx + 1}: ${ctx.strategy}**\n- Procurement Order: ${workflowDatasets[idx]?.orderId || orderId}\n- Material: ${ctx.product} (SKU: ${ctx.sku})\n- Quantity Ordered: ${Math.floor(Number(ctx.qty) * 0.8)} metric tons\n- Cost Impact: ${ctx.cost}\n- Implementation Timeline: ${ctx.timeline}\n- Expected Business Impact: ${ctx.impact}`
+      ).join('\n\n');
+      
+      addChatMessage(
+        `🎯 **Multi-Strategy Execution Summary**\n\nI have successfully coordinated the implementation of ${actionContexts.length} mitigation strateg${actionContexts.length !== 1 ? 'ies' : 'y'} through automated agent orchestration:\n${summaryText}\n\n✅ **Next Steps:**\n1. Monitor supplier delivery progress\n2. Track procurement order fulfillment\n3. Update stakeholders on strategy execution status\n4. Prepare for production scheduling upon material receipt\n\n📊 **Confidence Level:** High - All agent coordination completed successfully\n\n💬 If you need to adjust any strategy parameters or have questions about the execution plan, I'm here to assist!`,
+        "assistant",
+        "orchestrator"
+      );
+    } else {
+      addChatMessage(
+        `**Final Summary:**\n\n✅ **Action Taken:** An order has been placed for ${Math.floor(Number(requiredQty) * 0.8)} metric tons of ${productName} SKU (${insufficientItem}) to fulfill the requirement.\n\n📦 **Order ID:** ${orderId}\n\n📍 **Product:** ${productName} (HSN: ${productHSN})\n\n⏳ **Status:** The PO can be processed once the ordered item is received.\n\nIf you have any further questions or need additional assistance, please let me know!`,
+        "assistant",
+        "orchestrator"
+      );
+    }
 
     setWorkflowStatus("completed");
     setIsProcessing(false);
