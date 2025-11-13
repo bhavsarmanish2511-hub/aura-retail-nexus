@@ -251,8 +251,6 @@ export function WorkflowProcessor({
     const actionContexts = generateActionContext();
 
     // Dynamic initial orchestrator message based on selected actions
-    await new Promise((resolve) => setTimeout(resolve, 500));
-    
     if (actionContexts && actionContexts.length > 0) {
       const strategyList = actionContexts.map((ctx, idx) => `${idx + 1}. ${ctx.strategy}`).join("\n");
       addChatMessage(
@@ -261,7 +259,6 @@ export function WorkflowProcessor({
         "orchestrator"
       );
       
-      await new Promise((resolve) => setTimeout(resolve, 800));
       addChatMessage(
         `**Strategy Analysis:**\n${actionContexts.map((ctx, idx) => 
           `\n**Strategy ${idx + 1}: ${ctx.strategy}**\n- Cost: ${ctx.cost}\n- Timeline: ${ctx.timeline}\n- Expected Impact: ${ctx.impact}\n- Target Product: ${ctx.product} (HSN: ${ctx.hsn})`
@@ -275,8 +272,6 @@ export function WorkflowProcessor({
 
     // Add orchestrator actions progressively with dynamic context
     for (let i = 0; i < orchestratorSteps.length; i++) {
-      await new Promise((resolve) => setTimeout(resolve, 800));
-      
       const newAction: AgentAction = {
         id: `action-${Date.now()}-${i}`,
         agentType: "orchestrator",
@@ -291,9 +286,7 @@ export function WorkflowProcessor({
 
       // Add corresponding tool agent outputs and chat messages for specific steps
       if (i === 2) {
-        await new Promise((resolve) => setTimeout(resolve, 600));
         addToolAgentOutput(0);
-        await new Promise((resolve) => setTimeout(resolve, 400));
         
         if (actionContexts && actionContexts.length > 0) {
           const ctx = actionContexts[0];
@@ -306,14 +299,10 @@ export function WorkflowProcessor({
           addChatMessage(`I've extracted the details from the PO. Product: ${productName}, HSN Code: ${productHSN}, Quantity: ${requiredQty} metric tons. Now checking the STP document...`, "assistant", "tool");
         }
       } else if (i === 3) {
-        await new Promise((resolve) => setTimeout(resolve, 600));
         addToolAgentOutput(1);
-        await new Promise((resolve) => setTimeout(resolve, 400));
         addChatMessage(`🔍 **STP Document Located**\n\nFound technical specification document at: /documents/STP_${productHSN.replace(/\./g, "_")}_v2.3.pdf\n\nParsing material composition and consumable requirements...`, "assistant", "tool");
       } else if (i === 4) {
-        await new Promise((resolve) => setTimeout(resolve, 600));
         addToolAgentOutput(2);
-        await new Promise((resolve) => setTimeout(resolve, 400));
         
         if (actionContexts && actionContexts.length > 0) {
           addChatMessage(
@@ -325,9 +314,7 @@ export function WorkflowProcessor({
           addChatMessage(`The STP requires: ${insufficientItem} (${Math.floor(Number(requiredQty) * 0.6)} metric tons) and ${sufficientItem} (${Math.floor(Number(requiredQty) * 0.4)} metric tons). Checking inventory levels with the Inventory Agent...`, "assistant", "orchestrator");
         }
       } else if (i === 5) {
-        await new Promise((resolve) => setTimeout(resolve, 600));
         addToolAgentOutput(3);
-        await new Promise((resolve) => setTimeout(resolve, 400));
         
         if (actionContexts && actionContexts.length > 0) {
           const ctx = actionContexts[0];
@@ -340,8 +327,6 @@ export function WorkflowProcessor({
           addChatMessage(`Current inventory shows ${insufficientItem}: 0 metric tons (Insufficient ⚠️), ${sufficientItem}: ${Math.floor(Number(requiredQty) * 0.5)} metric tons (Sufficient ✓)`, "assistant", "inventory");
         }
         
-        await new Promise((resolve) => setTimeout(resolve, 800));
-        
         if (actionContexts && actionContexts.length > 0) {
           addChatMessage(
             `🔄 **Orchestrator Decision**\n\nBased on inventory gap analysis, coordinating with Procurement Agent to execute emergency material acquisition. This action directly supports the strategy implementation timeline.`,
@@ -352,9 +337,7 @@ export function WorkflowProcessor({
           addChatMessage(`I see we're missing ${insufficientItem}. Let me coordinate with the Procurement Agent to place an order...`, "assistant", "orchestrator");
         }
       } else if (i === 6) {
-        await new Promise((resolve) => setTimeout(resolve, 600));
         addToolAgentOutput(4);
-        await new Promise((resolve) => setTimeout(resolve, 400));
         
         if (actionContexts && actionContexts.length > 0) {
           const ctx = actionContexts[0];
@@ -370,8 +353,6 @@ export function WorkflowProcessor({
     }
 
     // Dynamic final response based on selected strategies
-    await new Promise((resolve) => setTimeout(resolve, 1000));
-    
     if (actionContexts && actionContexts.length > 0) {
       const summaryText = actionContexts.map((ctx, idx) => 
         `\n**Strategy ${idx + 1}: ${ctx.strategy}**\n- Procurement Order: ${workflowDatasets[idx]?.orderId || orderId}\n- Material: ${ctx.product} (SKU: ${ctx.sku})\n- Quantity Ordered: ${Math.floor(Number(ctx.qty) * 0.8)} metric tons\n- Cost Impact: ${ctx.cost}\n- Implementation Timeline: ${ctx.timeline}\n- Expected Business Impact: ${ctx.impact}`
@@ -394,7 +375,6 @@ export function WorkflowProcessor({
     setIsProcessing(false);
 
     // Add orchestrator end message
-    await new Promise((resolve) => setTimeout(resolve, 500));
     const endAction: AgentAction = {
       id: `end-${Date.now()}`,
       agentType: "orchestrator",
