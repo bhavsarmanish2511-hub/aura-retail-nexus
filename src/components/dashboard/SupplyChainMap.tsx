@@ -216,7 +216,7 @@ const castrolNodes: SupplyChainNode[] = [
 const alertsData = [
   {
     id: "6",
-    title: "CRITICAL ALERT: Viscosity Modifier VM-350 (HSN: 3811.21.10), US Section 301 tariffs escalated from 25% to 35%",
+    title: "CRITICAL ALERT: Viscosity Modifier VM-350 (HSN: 3811.21.10), US Section 301 tariffs escalated from 25% to 35% - Tariff effective 2 months from now",
     description:
       "Highest Impact Product: Viscosity Modifier VM-350 Polymeric | Category: Performance Additives | SKU: VM-350-BULK, VM-350-IBC | Critical Route: Shenzhen Manufacturing → Los Angeles Port → Silvassa Plant | Immediate cost impact on all US-bound shipments affecting premium motor oil blending operations.",
     severity: "critical" as const,
