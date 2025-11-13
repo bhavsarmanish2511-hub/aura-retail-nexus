@@ -107,26 +107,14 @@ export function WorkflowProcessor({
       productSKU,
       secondarySKU,
       requiredQty,
-      orderId: `ORD${Math.floor(100000 + Math.random() * 900000)}`
+      orderId: `ORD${Math.floor(100000 + Math.random() * 900000)}`,
+      insufficientItem: productSKU,
+      sufficientItem: secondarySKU
     };
   });
   
-  // Use first dataset as default for orchestrator steps
-  const firstDataset = workflowDatasets[0] || {
-    productName: "Castrol EDGE 5W-30",
-    productHSN: "2710.19.31",
-    productSKU: "EDGE-5W30-1L",
-    secondarySKU: "EDGE-5W30-4L",
-    requiredQty: "120",
-    orderId: `ORD${Math.floor(100000 + Math.random() * 900000)}`
-  };
-  
-  const { productName, productHSN, productSKU, secondarySKU, requiredQty, orderId } = firstDataset;
-  const insufficientItem = productSKU;
-  const sufficientItem = secondarySKU;
-  
-  // Dynamic workflow steps
-  const orchestratorSteps = [
+  // Function to generate orchestrator steps for a specific dataset
+  const generateOrchestratorSteps = (dataset: typeof workflowDatasets[0]) => [
     {
       id: "orch-1",
       title: "Identified Workflow: Process PO",
@@ -147,7 +135,7 @@ export function WorkflowProcessor({
     },
     {
       id: "orch-4",
-      title: `Action: Find latest STP document path for HSN code ${productHSN}.`,
+      title: `Action: Find latest STP document path for HSN code ${dataset.productHSN}.`,
       description: "",
       outputs: [],
     },
@@ -165,37 +153,38 @@ export function WorkflowProcessor({
     },
     {
       id: "orch-7",
-      title: `Action: Order missing material ${insufficientItem}.`,
+      title: `Action: Order missing material ${dataset.insufficientItem}.`,
       description: "",
       outputs: [],
     },
   ];
 
-  const toolAgentOutputs = [
+  // Function to generate tool agent outputs for a specific dataset
+  const generateToolAgentOutputs = (dataset: typeof workflowDatasets[0]) => [
     {
       id: "tool-1",
       label: "Extracted details from purchase order document.",
-      value: `Product: ${productName}, HSN Code: ${productHSN}, Quantity: ${requiredQty} metric tons`,
+      value: `Product: ${dataset.productName}, HSN Code: ${dataset.productHSN}, Quantity: ${dataset.requiredQty} metric tons`,
     },
     {
       id: "tool-2",
       label: "File path for STP Procurement document.",
-      value: `/documents/STP_${productHSN.replace(/\./g, "_")}_v2.3.pdf`,
+      value: `/documents/STP_${dataset.productHSN.replace(/\./g, "_")}_v2.3.pdf`,
     },
     {
       id: "tool-3",
       label: "Extracted details for Procurement STP document.",
-      value: `Required: ${insufficientItem} (${Math.floor(Number(requiredQty) * 0.6)} metric tons), ${sufficientItem} (${Math.floor(Number(requiredQty) * 0.4)} metric tons)`,
+      value: `Required: ${dataset.insufficientItem} (${Math.floor(Number(dataset.requiredQty) * 0.6)} metric tons), ${dataset.sufficientItem} (${Math.floor(Number(dataset.requiredQty) * 0.4)} metric tons)`,
     },
     {
       id: "tool-4",
       label: "Inventory list with quantities.",
-      value: `${insufficientItem}: 0 metric tons (Insufficient ⚠️), ${sufficientItem}: ${Math.floor(Number(requiredQty) * 0.5)} metric tons (Sufficient ✓)`,
+      value: `${dataset.insufficientItem}: 0 metric tons (Insufficient ⚠️), ${dataset.sufficientItem}: ${Math.floor(Number(dataset.requiredQty) * 0.5)} metric tons (Sufficient ✓)`,
     },
     {
       id: "tool-5",
-      label: `Order placed for ${Math.floor(Number(requiredQty) * 0.8)} metric tons of ${insufficientItem}.`,
-      value: `Order ID: ${orderId}`,
+      label: `Order placed for ${Math.floor(Number(dataset.requiredQty) * 0.8)} metric tons of ${dataset.insufficientItem}.`,
+      value: `Order ID: ${dataset.orderId}`,
     },
   ];
 
@@ -270,93 +259,122 @@ export function WorkflowProcessor({
       addChatMessage(`Hello! I'm analyzing purchase orders for workflow processing. No specific strategies selected yet.`, "assistant", "orchestrator");
     }
 
-    // Add orchestrator actions progressively with dynamic context
-    for (let i = 0; i < orchestratorSteps.length; i++) {
-      const newAction: AgentAction = {
-        id: `action-${Date.now()}-${i}`,
-        agentType: "orchestrator",
-        title: orchestratorSteps[i].title,
-        description: orchestratorSteps[i].description,
-        status: "completed",
-        outputs: orchestratorSteps[i].outputs,
-        timestamp: new Date(),
-      };
+    // Process each strategy separately with unique workflow data
+    for (let strategyIdx = 0; strategyIdx < workflowDatasets.length; strategyIdx++) {
+      const dataset = workflowDatasets[strategyIdx];
+      const ctx = actionContexts?.[strategyIdx];
+      const orchestratorSteps = generateOrchestratorSteps(dataset);
+      const toolAgentOutputs = generateToolAgentOutputs(dataset);
       
-      setAgentActions((prev) => [...prev, newAction]);
+      // Add separator for multiple strategies
+      if (strategyIdx > 0) {
+        addChatMessage(
+          `\n---\n\n🔄 **Processing Next Strategy: ${ctx?.strategy}**\n\nInitiating workflow for strategy ${strategyIdx + 1} of ${workflowDatasets.length}...`,
+          "assistant",
+          "orchestrator"
+        );
+      }
 
-      // Add corresponding tool agent outputs and chat messages for specific steps
-      if (i === 2) {
-        addToolAgentOutput(0);
+      // Add orchestrator actions progressively with dynamic context for this strategy
+      for (let i = 0; i < orchestratorSteps.length; i++) {
+        const newAction: AgentAction = {
+          id: `action-${strategyIdx}-${Date.now()}-${i}`,
+          agentType: "orchestrator",
+          title: orchestratorSteps[i].title,
+          description: orchestratorSteps[i].description,
+          status: "completed",
+          outputs: orchestratorSteps[i].outputs,
+          timestamp: new Date(),
+        };
         
-        if (actionContexts && actionContexts.length > 0) {
-          const ctx = actionContexts[0];
-          addChatMessage(
-            `📄 **Document Analysis Complete**\n\nI've extracted procurement requirements aligned with your selected strategy "${ctx.strategy}":\n\n- Product: ${ctx.product}\n- HSN Code: ${ctx.hsn}\n- Required Quantity: ${ctx.qty} metric tons\n- Timeline Constraint: ${ctx.timeline}\n\nProceeding to validate against Standard Technical Procedures...`,
-            "assistant",
-            "tool"
-          );
-        } else {
-          addChatMessage(`I've extracted the details from the PO. Product: ${productName}, HSN Code: ${productHSN}, Quantity: ${requiredQty} metric tons. Now checking the STP document...`, "assistant", "tool");
-        }
-      } else if (i === 3) {
-        addToolAgentOutput(1);
-        addChatMessage(`🔍 **STP Document Located**\n\nFound technical specification document at: /documents/STP_${productHSN.replace(/\./g, "_")}_v2.3.pdf\n\nParsing material composition and consumable requirements...`, "assistant", "tool");
-      } else if (i === 4) {
-        addToolAgentOutput(2);
-        
-        if (actionContexts && actionContexts.length > 0) {
-          addChatMessage(
-            `📋 **STP Requirements Parsed**\n\nMaterial breakdown for strategy execution:\n- Primary Component: ${insufficientItem} (${Math.floor(Number(requiredQty) * 0.6)} metric tons)\n- Secondary Component: ${sufficientItem} (${Math.floor(Number(requiredQty) * 0.4)} metric tons)\n\nInitiating inventory validation with Inventory Management Agent...`,
-            "assistant",
-            "orchestrator"
-          );
-        } else {
-          addChatMessage(`The STP requires: ${insufficientItem} (${Math.floor(Number(requiredQty) * 0.6)} metric tons) and ${sufficientItem} (${Math.floor(Number(requiredQty) * 0.4)} metric tons). Checking inventory levels with the Inventory Agent...`, "assistant", "orchestrator");
-        }
-      } else if (i === 5) {
-        addToolAgentOutput(3);
-        
-        if (actionContexts && actionContexts.length > 0) {
-          const ctx = actionContexts[0];
-          addChatMessage(
-            `📊 **Inventory Status Report**\n\nCurrent stock levels:\n- ${insufficientItem}: 0 metric tons ⚠️ **CRITICAL SHORTAGE**\n- ${sufficientItem}: ${Math.floor(Number(requiredQty) * 0.5)} metric tons ✅ **SUFFICIENT**\n\n⚠️ Identified gap conflicts with strategy "${ctx.strategy}" timeline (${ctx.timeline}). Escalating to Procurement Agent for emergency sourcing...`,
-            "assistant",
-            "inventory"
-          );
-        } else {
-          addChatMessage(`Current inventory shows ${insufficientItem}: 0 metric tons (Insufficient ⚠️), ${sufficientItem}: ${Math.floor(Number(requiredQty) * 0.5)} metric tons (Sufficient ✓)`, "assistant", "inventory");
-        }
-        
-        if (actionContexts && actionContexts.length > 0) {
-          addChatMessage(
-            `🔄 **Orchestrator Decision**\n\nBased on inventory gap analysis, coordinating with Procurement Agent to execute emergency material acquisition. This action directly supports the strategy implementation timeline.`,
-            "assistant",
-            "orchestrator"
-          );
-        } else {
-          addChatMessage(`I see we're missing ${insufficientItem}. Let me coordinate with the Procurement Agent to place an order...`, "assistant", "orchestrator");
-        }
-      } else if (i === 6) {
-        addToolAgentOutput(4);
-        
-        if (actionContexts && actionContexts.length > 0) {
-          const ctx = actionContexts[0];
-          addChatMessage(
-            `✅ **Procurement Order Confirmed**\n\n**Order Details:**\n- Order ID: ${orderId}\n- Material: ${insufficientItem}\n- Quantity: ${Math.floor(Number(requiredQty) * 0.8)} metric tons\n- Estimated Cost Impact: ${ctx.cost}\n- Delivery Alignment: ${ctx.timeline}\n\n📦 This procurement directly supports strategy: "${ctx.strategy}"\n\nOrder tracking activated. Supplier coordination in progress.`,
-            "assistant",
-            "procurement"
-          );
-        } else {
-          addChatMessage(`Order placed successfully! Order ID: ${orderId} for ${Math.floor(Number(requiredQty) * 0.8)} metric tons of ${insufficientItem}.`, "assistant", "procurement");
+        setAgentActions((prev) => [...prev, newAction]);
+
+        // Add tool agent output action
+        const addToolOutput = (index: number) => {
+          const output = toolAgentOutputs[index];
+          const toolAction: AgentAction = {
+            id: `tool-${strategyIdx}-${Date.now()}-${index}`,
+            agentType: "tool",
+            title: output.label,
+            status: "completed",
+            outputs: [{ label: output.label, value: output.value }],
+            timestamp: new Date(),
+          };
+          setAgentActions((prev) => [...prev, toolAction]);
+        };
+
+        // Add corresponding tool agent outputs and chat messages for specific steps
+        if (i === 2) {
+          addToolOutput(0);
+          
+          if (ctx) {
+            addChatMessage(
+              `📄 **Document Analysis Complete**\n\nI've extracted procurement requirements aligned with your selected strategy "${ctx.strategy}":\n\n- Product: ${ctx.product}\n- HSN Code: ${ctx.hsn}\n- Required Quantity: ${ctx.qty} metric tons\n- Timeline Constraint: ${ctx.timeline}\n\nProceeding to validate against Standard Technical Procedures...`,
+              "assistant",
+              "tool"
+            );
+          } else {
+            addChatMessage(`I've extracted the details from the PO. Product: ${dataset.productName}, HSN Code: ${dataset.productHSN}, Quantity: ${dataset.requiredQty} metric tons. Now checking the STP document...`, "assistant", "tool");
+          }
+        } else if (i === 3) {
+          addToolOutput(1);
+          addChatMessage(`🔍 **STP Document Located**\n\nFound technical specification document at: /documents/STP_${dataset.productHSN.replace(/\./g, "_")}_v2.3.pdf\n\nParsing material composition and consumable requirements...`, "assistant", "tool");
+        } else if (i === 4) {
+          addToolOutput(2);
+          
+          if (ctx) {
+            addChatMessage(
+              `📋 **STP Requirements Parsed**\n\nMaterial breakdown for strategy execution:\n- Primary Component: ${dataset.insufficientItem} (${Math.floor(Number(dataset.requiredQty) * 0.6)} metric tons)\n- Secondary Component: ${dataset.sufficientItem} (${Math.floor(Number(dataset.requiredQty) * 0.4)} metric tons)\n\nInitiating inventory validation with Inventory Management Agent...`,
+              "assistant",
+              "orchestrator"
+            );
+          } else {
+            addChatMessage(`The STP requires: ${dataset.insufficientItem} (${Math.floor(Number(dataset.requiredQty) * 0.6)} metric tons) and ${dataset.sufficientItem} (${Math.floor(Number(dataset.requiredQty) * 0.4)} metric tons). Checking inventory levels with the Inventory Agent...`, "assistant", "orchestrator");
+          }
+        } else if (i === 5) {
+          addToolOutput(3);
+          
+          if (ctx) {
+            addChatMessage(
+              `📊 **Inventory Status Report**\n\nCurrent stock levels:\n- ${dataset.insufficientItem}: 0 metric tons ⚠️ **CRITICAL SHORTAGE**\n- ${dataset.sufficientItem}: ${Math.floor(Number(dataset.requiredQty) * 0.5)} metric tons ✅ **SUFFICIENT**\n\n⚠️ Identified gap conflicts with strategy "${ctx.strategy}" timeline (${ctx.timeline}). Escalating to Procurement Agent for emergency sourcing...`,
+              "assistant",
+              "inventory"
+            );
+          } else {
+            addChatMessage(`Current inventory shows ${dataset.insufficientItem}: 0 metric tons (Insufficient ⚠️), ${dataset.sufficientItem}: ${Math.floor(Number(dataset.requiredQty) * 0.5)} metric tons (Sufficient ✓)`, "assistant", "inventory");
+          }
+          
+          if (ctx) {
+            addChatMessage(
+              `🔄 **Orchestrator Decision**\n\nBased on inventory gap analysis, coordinating with Procurement Agent to execute emergency material acquisition. This action directly supports the strategy implementation timeline.`,
+              "assistant",
+              "orchestrator"
+            );
+          } else {
+            addChatMessage(`I see we're missing ${dataset.insufficientItem}. Let me coordinate with the Procurement Agent to place an order...`, "assistant", "orchestrator");
+          }
+        } else if (i === 6) {
+          addToolOutput(4);
+          
+          if (ctx) {
+            addChatMessage(
+              `✅ **Procurement Order Confirmed**\n\n**Order Details:**\n- Order ID: ${dataset.orderId}\n- Material: ${dataset.insufficientItem}\n- Quantity: ${Math.floor(Number(dataset.requiredQty) * 0.8)} metric tons\n- Estimated Cost Impact: ${ctx.cost}\n- Delivery Alignment: ${ctx.timeline}\n\n📦 This procurement directly supports strategy: "${ctx.strategy}"\n\nOrder tracking activated. Supplier coordination in progress.`,
+              "assistant",
+              "procurement"
+            );
+          } else {
+            addChatMessage(`Order placed successfully! Order ID: ${dataset.orderId} for ${Math.floor(Number(dataset.requiredQty) * 0.8)} metric tons of ${dataset.insufficientItem}.`, "assistant", "procurement");
+          }
         }
       }
     }
 
     // Dynamic final response based on selected strategies
     if (actionContexts && actionContexts.length > 0) {
-      const summaryText = actionContexts.map((ctx, idx) => 
-        `\n**Strategy ${idx + 1}: ${ctx.strategy}**\n- Procurement Order: ${workflowDatasets[idx]?.orderId || orderId}\n- Material: ${ctx.product} (SKU: ${ctx.sku})\n- Quantity Ordered: ${Math.floor(Number(ctx.qty) * 0.8)} metric tons\n- Cost Impact: ${ctx.cost}\n- Implementation Timeline: ${ctx.timeline}\n- Expected Business Impact: ${ctx.impact}`
-      ).join('\n\n');
+      const summaryText = actionContexts.map((ctx, idx) => {
+        const dataset = workflowDatasets[idx];
+        return `\n**Strategy ${idx + 1}: ${ctx.strategy}**\n- Procurement Order: ${dataset?.orderId}\n- Material: ${ctx.product} (SKU: ${ctx.sku})\n- Quantity Ordered: ${Math.floor(Number(ctx.qty) * 0.8)} metric tons\n- Cost Impact: ${ctx.cost}\n- Implementation Timeline: ${ctx.timeline}\n- Expected Business Impact: ${ctx.impact}`;
+      }).join('\n\n');
       
       addChatMessage(
         `🎯 **Multi-Strategy Execution Summary**\n\nI have successfully coordinated the implementation of ${actionContexts.length} mitigation strateg${actionContexts.length !== 1 ? 'ies' : 'y'} through automated agent orchestration:\n${summaryText}\n\n✅ **Next Steps:**\n1. Monitor supplier delivery progress\n2. Track procurement order fulfillment\n3. Update stakeholders on strategy execution status\n4. Prepare for production scheduling upon material receipt\n\n📊 **Confidence Level:** High - All agent coordination completed successfully\n\n💬 If you need to adjust any strategy parameters or have questions about the execution plan, I'm here to assist!`,
@@ -364,11 +382,14 @@ export function WorkflowProcessor({
         "orchestrator"
       );
     } else {
-      addChatMessage(
-        `**Final Summary:**\n\n✅ **Action Taken:** An order has been placed for ${Math.floor(Number(requiredQty) * 0.8)} metric tons of ${productName} SKU (${insufficientItem}) to fulfill the requirement.\n\n📦 **Order ID:** ${orderId}\n\n📍 **Product:** ${productName} (HSN: ${productHSN})\n\n⏳ **Status:** The PO can be processed once the ordered item is received.\n\nIf you have any further questions or need additional assistance, please let me know!`,
-        "assistant",
-        "orchestrator"
-      );
+      const dataset = workflowDatasets[0];
+      if (dataset) {
+        addChatMessage(
+          `**Final Summary:**\n\n✅ **Action Taken:** An order has been placed for ${Math.floor(Number(dataset.requiredQty) * 0.8)} metric tons of ${dataset.productName} SKU (${dataset.insufficientItem}) to fulfill the requirement.\n\n📦 **Order ID:** ${dataset.orderId}\n\n📍 **Product:** ${dataset.productName} (HSN: ${dataset.productHSN})\n\n⏳ **Status:** The PO can be processed once the ordered item is received.\n\nIf you have any further questions or need additional assistance, please let me know!`,
+          "assistant",
+          "orchestrator"
+        );
+      }
     }
 
     setWorkflowStatus("completed");
@@ -383,19 +404,6 @@ export function WorkflowProcessor({
       timestamp: new Date(),
     };
     setAgentActions((prev) => [...prev, endAction]);
-  };
-
-  const addToolAgentOutput = (index: number) => {
-    const output = toolAgentOutputs[index];
-    const newAction: AgentAction = {
-      id: `tool-${Date.now()}-${index}`,
-      agentType: "tool",
-      title: output.label,
-      status: "completed",
-      outputs: [{ label: output.label, value: output.value }],
-      timestamp: new Date(),
-    };
-    setAgentActions((prev) => [...prev, newAction]);
   };
 
   const handleSendMessage = async () => {
