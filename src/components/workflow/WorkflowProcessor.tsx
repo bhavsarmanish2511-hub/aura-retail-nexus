@@ -557,22 +557,10 @@ export function WorkflowProcessor({
         {/* Status Banner */}
         <div className="px-4 py-3 bg-secondary/20 border-b border-border">
           <div className="flex items-center justify-center gap-3">
-            {workflowStatus === "processing" && (
-              <>
-                <Loader2 className="h-5 w-5 text-primary animate-spin" />
-                <span className="text-foreground font-medium">
-                  Workflow Execution in progress. Please wait...
-                </span>
-              </>
-            )}
-            {workflowStatus === "completed" && (
-              <>
-                <CheckCircle className="h-5 w-5 text-success" />
-                <span className="text-foreground font-medium">
-                  Workflow Executed Successfully
-                </span>
-              </>
-            )}
+            <CheckCircle className="h-5 w-5 text-success" />
+            <span className="text-foreground font-medium">
+              Workflow Executed Successfully
+            </span>
           </div>
         </div>
       </Card>
@@ -603,7 +591,7 @@ export function WorkflowProcessor({
                         .map((action, index) => (
                           <div
                             key={action.id}
-                            className="flex items-start gap-3 animate-in fade-in slide-in-from-left-5"
+                            className="flex items-start gap-3"
                           >
                             <CheckCircle className="h-5 w-5 text-success mt-0.5 flex-shrink-0" />
                             <div className="flex-1">
@@ -644,7 +632,7 @@ export function WorkflowProcessor({
                           .map((action) => (
                             <div
                               key={action.id}
-                              className="bg-secondary/30 border border-border rounded-lg p-3 animate-in fade-in slide-in-from-right-5"
+                              className="bg-secondary/30 border border-border rounded-lg p-3"
                             >
                               <div className="flex items-start gap-2 mb-2">
                                 <CheckCircle className="h-4 w-4 text-success mt-0.5 flex-shrink-0" />
