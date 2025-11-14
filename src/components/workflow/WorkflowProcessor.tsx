@@ -81,6 +81,7 @@ export function WorkflowProcessor({
   const [agentActions, setAgentActions] = useState<AgentAction[]>([]);
   const [workflowStatus, setWorkflowStatus] = useState<"idle" | "processing" | "completed">("idle");
   const [currentStep, setCurrentStep] = useState(0);
+  const [hasExecutedOnce, setHasExecutedOnce] = useState(false);
   const { toast } = useToast();
   const { filters } = useDashboardFilters();
 
@@ -210,13 +211,15 @@ export function WorkflowProcessor({
     return contexts;
   };
 
-  // Auto-start workflow when component mounts
+  // Auto-start workflow when component mounts (only once)
   useEffect(() => {
-    const timer = setTimeout(() => {
-      processWorkflow();
-    }, 1000);
-    return () => clearTimeout(timer);
-  }, []);
+    if (!hasExecutedOnce) {
+      const timer = setTimeout(() => {
+        processWorkflow();
+      }, 1000);
+      return () => clearTimeout(timer);
+    }
+  }, [hasExecutedOnce]);
 
   const addChatMessage = (
     content: string, 
@@ -238,9 +241,11 @@ export function WorkflowProcessor({
     setIsProcessing(true);
 
     const actionContexts = generateActionContext();
+    const animationDelay = hasExecutedOnce ? 0 : 800; // Only animate on first execution
 
     // Dynamic initial orchestrator message based on selected actions
     if (actionContexts && actionContexts.length > 0) {
+      await new Promise((resolve) => setTimeout(resolve, animationDelay));
       const strategyList = actionContexts.map((ctx, idx) => `${idx + 1}. ${ctx.strategy}`).join("\n");
       addChatMessage(
         `Hello! I'm the Orchestrator Agent analyzing your selected mitigation strategies:\n\n${strategyList}\n\nI will now coordinate multi-agent workflow execution to implement these strategies. Total strategies: ${actionContexts.length}`,
@@ -248,6 +253,7 @@ export function WorkflowProcessor({
         "orchestrator"
       );
       
+      await new Promise((resolve) => setTimeout(resolve, animationDelay));
       addChatMessage(
         `**Strategy Analysis:**\n${actionContexts.map((ctx, idx) => 
           `\n**Strategy ${idx + 1}: ${ctx.strategy}**\n- Cost: ${ctx.cost}\n- Timeline: ${ctx.timeline}\n- Expected Impact: ${ctx.impact}\n- Target Product: ${ctx.product} (HSN: ${ctx.hsn})`
@@ -256,6 +262,7 @@ export function WorkflowProcessor({
         "orchestrator"
       );
     } else {
+      await new Promise((resolve) => setTimeout(resolve, animationDelay));
       addChatMessage(`Hello! I'm analyzing purchase orders for workflow processing. No specific strategies selected yet.`, "assistant", "orchestrator");
     }
 
@@ -277,6 +284,8 @@ export function WorkflowProcessor({
 
       // Add orchestrator actions progressively with dynamic context for this strategy
       for (let i = 0; i < orchestratorSteps.length; i++) {
+        await new Promise((resolve) => setTimeout(resolve, animationDelay));
+        
         const newAction: AgentAction = {
           id: `action-${strategyIdx}-${Date.now()}-${i}`,
           agentType: "orchestrator",
@@ -290,7 +299,9 @@ export function WorkflowProcessor({
         setAgentActions((prev) => [...prev, newAction]);
 
         // Add tool agent output action
-        const addToolOutput = (index: number) => {
+        const addToolOutput = async (index: number) => {
+          await new Promise((resolve) => setTimeout(resolve, animationDelay));
+          
           const output = toolAgentOutputs[index];
           const toolAction: AgentAction = {
             id: `tool-${strategyIdx}-${Date.now()}-${index}`,
@@ -305,7 +316,7 @@ export function WorkflowProcessor({
 
         // Add corresponding tool agent outputs and chat messages for specific steps
         if (i === 2) {
-          addToolOutput(0);
+          await addToolOutput(0);
           
           if (ctx) {
             addChatMessage(
@@ -317,10 +328,10 @@ export function WorkflowProcessor({
             addChatMessage(`I've extracted the details from the PO. Product: ${dataset.productName}, HSN Code: ${dataset.productHSN}, Quantity: ${dataset.requiredQty} metric tons. Now checking the STP document...`, "assistant", "tool");
           }
         } else if (i === 3) {
-          addToolOutput(1);
+          await addToolOutput(1);
           addChatMessage(`🔍 **STP Document Located**\n\nFound technical specification document at: /documents/STP_${dataset.productHSN.replace(/\./g, "_")}_v2.3.pdf\n\nParsing material composition and consumable requirements...`, "assistant", "tool");
         } else if (i === 4) {
-          addToolOutput(2);
+          await addToolOutput(2);
           
           if (ctx) {
             addChatMessage(
@@ -332,7 +343,7 @@ export function WorkflowProcessor({
             addChatMessage(`The STP requires: ${dataset.insufficientItem} (${Math.floor(Number(dataset.requiredQty) * 0.6)} metric tons) and ${dataset.sufficientItem} (${Math.floor(Number(dataset.requiredQty) * 0.4)} metric tons). Checking inventory levels with the Inventory Agent...`, "assistant", "orchestrator");
           }
         } else if (i === 5) {
-          addToolOutput(3);
+          await addToolOutput(3);
           
           if (ctx) {
             addChatMessage(
@@ -354,7 +365,7 @@ export function WorkflowProcessor({
             addChatMessage(`I see we're missing ${dataset.insufficientItem}. Let me coordinate with the Procurement Agent to place an order...`, "assistant", "orchestrator");
           }
         } else if (i === 6) {
-          addToolOutput(4);
+          await addToolOutput(4);
           
           if (ctx) {
             addChatMessage(
@@ -394,8 +405,10 @@ export function WorkflowProcessor({
 
     setWorkflowStatus("completed");
     setIsProcessing(false);
+    setHasExecutedOnce(true); // Mark as executed
 
     // Add orchestrator end message
+    await new Promise((resolve) => setTimeout(resolve, animationDelay));
     const endAction: AgentAction = {
       id: `end-${Date.now()}`,
       agentType: "orchestrator",
@@ -545,10 +558,21 @@ export function WorkflowProcessor({
         {/* Status Banner */}
         <div className="px-4 py-3 bg-secondary/20 border-b border-border">
           <div className="flex items-center justify-center gap-3">
-            <CheckCircle className="h-5 w-5 text-success" />
-            <span className="text-foreground font-medium">
-              Workflow Executed Successfully
-            </span>
+            {workflowStatus === "completed" ? (
+              <>
+                <CheckCircle className="h-5 w-5 text-success" />
+                <span className="text-foreground font-medium">
+                  Workflow Executed Successfully
+                </span>
+              </>
+            ) : (
+              <>
+                <Loader2 className="h-5 w-5 text-primary animate-spin" />
+                <span className="text-foreground font-medium">
+                  Workflow Execution in progress. Please wait...
+                </span>
+              </>
+            )}
           </div>
         </div>
       </Card>
@@ -560,7 +584,7 @@ export function WorkflowProcessor({
           <ScrollArea className="h-[600px]">
             <div className="p-6 space-y-6">
               {/* Orchestrator Section */}
-              <div className="space-y-4">
+              <div className={cn("space-y-4", !hasExecutedOnce && "animate-in fade-in slide-in-from-left-5 duration-500")}>
                 <div className="flex items-start gap-3">
                   <div className="w-10 h-10 rounded-full bg-primary/20 flex items-center justify-center flex-shrink-0">
                     <Bot className="w-5 h-5 text-primary" />
@@ -601,7 +625,7 @@ export function WorkflowProcessor({
 
               {/* Tool Agent Section */}
               {agentActions.some((a) => a.agentType === "tool") && (
-                <div className="space-y-4 pl-8">
+                <div className={cn("space-y-4 pl-8", !hasExecutedOnce && "animate-in fade-in slide-in-from-right-5 duration-500")}>
                   <div className="flex items-start gap-3">
                     <div className="w-10 h-10 rounded-full bg-cyan-500/20 flex items-center justify-center flex-shrink-0">
                       <Bot className="w-5 h-5 text-cyan-500" />
