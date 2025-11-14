@@ -66,6 +66,8 @@ interface WorkflowProcessorProps {
       }>;
     }>;
   };
+  shouldAnimate?: boolean;
+  onAnimationComplete?: () => void;
 }
 
 export function WorkflowProcessor({
@@ -73,6 +75,8 @@ export function WorkflowProcessor({
   workflowDescription,
   executedActions = [],
   alertData,
+  shouldAnimate = false,
+  onAnimationComplete,
 }: WorkflowProcessorProps) {
   const [messages, setMessages] = useState<Message[]>([]);
   const [inputMessage, setInputMessage] = useState("");
@@ -211,15 +215,18 @@ export function WorkflowProcessor({
     return contexts;
   };
 
-  // Auto-start workflow when component mounts (only once)
+  // Auto-start workflow when shouldAnimate is true
   useEffect(() => {
-    if (!hasExecutedOnce) {
+    if (shouldAnimate && !hasExecutedOnce) {
       const timer = setTimeout(() => {
         processWorkflow();
       }, 1000);
       return () => clearTimeout(timer);
+    } else if (!shouldAnimate && !hasExecutedOnce) {
+      // If not animating, just set the state directly without animation
+      processWorkflowWithoutAnimation();
     }
-  }, [hasExecutedOnce]);
+  }, [shouldAnimate, hasExecutedOnce]);
 
   const addChatMessage = (
     content: string, 
@@ -241,7 +248,7 @@ export function WorkflowProcessor({
     setIsProcessing(true);
 
     const actionContexts = generateActionContext();
-    const animationDelay = hasExecutedOnce ? 0 : 800; // Only animate on first execution
+    const animationDelay = shouldAnimate ? 800 : 0; // Only animate when shouldAnimate is true
 
     // Dynamic initial orchestrator message based on selected actions
     if (actionContexts && actionContexts.length > 0) {
@@ -406,6 +413,11 @@ export function WorkflowProcessor({
     setWorkflowStatus("completed");
     setIsProcessing(false);
     setHasExecutedOnce(true); // Mark as executed
+    
+    // Call onAnimationComplete callback if provided
+    if (onAnimationComplete) {
+      onAnimationComplete();
+    }
 
     // Add orchestrator end message
     await new Promise((resolve) => setTimeout(resolve, animationDelay));
@@ -417,6 +429,204 @@ export function WorkflowProcessor({
       timestamp: new Date(),
     };
     setAgentActions((prev) => [...prev, endAction]);
+  };
+
+  // Process workflow without animation - show results immediately
+  const processWorkflowWithoutAnimation = () => {
+    setWorkflowStatus("completed");
+    setIsProcessing(false);
+    setHasExecutedOnce(true);
+
+    const actionContexts = generateActionContext();
+    const allMessages: Message[] = [];
+    const allActions: AgentAction[] = [];
+
+    // Add initial orchestrator message
+    if (actionContexts && actionContexts.length > 0) {
+      const strategyList = actionContexts.map((ctx, idx) => `${idx + 1}. ${ctx.strategy}`).join("\n");
+      allMessages.push({
+        id: `msg-${Date.now()}-0`,
+        type: "assistant",
+        content: `Hello! I'm the Orchestrator Agent analyzing your selected mitigation strategies:\n\n${strategyList}\n\nI will now coordinate multi-agent workflow execution to implement these strategies. Total strategies: ${actionContexts.length}`,
+        timestamp: new Date(),
+        agent: "orchestrator",
+      });
+      
+      allMessages.push({
+        id: `msg-${Date.now()}-1`,
+        type: "assistant",
+        content: `**Strategy Analysis:**\n${actionContexts.map((ctx, idx) => 
+          `\n**Strategy ${idx + 1}: ${ctx.strategy}**\n- Cost: ${ctx.cost}\n- Timeline: ${ctx.timeline}\n- Expected Impact: ${ctx.impact}\n- Target Product: ${ctx.product} (HSN: ${ctx.hsn})`
+        ).join('\n')}`,
+        timestamp: new Date(),
+        agent: "orchestrator",
+      });
+    }
+
+    // Process each strategy
+    let messageId = 2;
+    for (let strategyIdx = 0; strategyIdx < workflowDatasets.length; strategyIdx++) {
+      const dataset = workflowDatasets[strategyIdx];
+      const ctx = actionContexts?.[strategyIdx];
+      const orchestratorSteps = generateOrchestratorSteps(dataset);
+      const toolAgentOutputs = generateToolAgentOutputs(dataset);
+
+      // Add separator for multiple strategies
+      if (strategyIdx > 0) {
+        allMessages.push({
+          id: `msg-${Date.now()}-${messageId++}`,
+          type: "assistant",
+          content: `\n---\n\n🔄 **Processing Next Strategy: ${ctx?.strategy}**\n\nInitiating workflow for strategy ${strategyIdx + 1} of ${workflowDatasets.length}...`,
+          timestamp: new Date(),
+          agent: "orchestrator",
+        });
+      }
+
+      // Add all orchestrator actions
+      orchestratorSteps.forEach((step, i) => {
+        allActions.push({
+          id: `action-${strategyIdx}-${Date.now()}-${i}`,
+          agentType: "orchestrator",
+          title: step.title,
+          description: step.description,
+          status: "completed",
+          outputs: step.outputs,
+          timestamp: new Date(),
+        });
+
+        // Add corresponding tool outputs and messages
+        if (i === 2) {
+          allActions.push({
+            id: `tool-${strategyIdx}-${Date.now()}-0`,
+            agentType: "tool",
+            title: toolAgentOutputs[0].label,
+            status: "completed",
+            outputs: [{ label: toolAgentOutputs[0].label, value: toolAgentOutputs[0].value }],
+            timestamp: new Date(),
+          });
+          
+          if (ctx) {
+            allMessages.push({
+              id: `msg-${Date.now()}-${messageId++}`,
+              type: "assistant",
+              content: `📄 **Document Analysis Complete**\n\nI've extracted procurement requirements aligned with your selected strategy "${ctx.strategy}":\n\n- Product: ${ctx.product}\n- HSN Code: ${ctx.hsn}\n- Required Quantity: ${ctx.qty} metric tons\n- Timeline Constraint: ${ctx.timeline}\n\nProceeding to validate against Standard Technical Procedures...`,
+              timestamp: new Date(),
+              agent: "tool",
+            });
+          }
+        } else if (i === 3) {
+          allActions.push({
+            id: `tool-${strategyIdx}-${Date.now()}-1`,
+            agentType: "tool",
+            title: toolAgentOutputs[1].label,
+            status: "completed",
+            outputs: [{ label: toolAgentOutputs[1].label, value: toolAgentOutputs[1].value }],
+            timestamp: new Date(),
+          });
+          allMessages.push({
+            id: `msg-${Date.now()}-${messageId++}`,
+            type: "assistant",
+            content: `🔍 **STP Document Located**\n\nFound technical specification document at: /documents/STP_${dataset.productHSN.replace(/\./g, "_")}_v2.3.pdf\n\nParsing material composition and consumable requirements...`,
+            timestamp: new Date(),
+            agent: "tool",
+          });
+        } else if (i === 4) {
+          allActions.push({
+            id: `tool-${strategyIdx}-${Date.now()}-2`,
+            agentType: "tool",
+            title: toolAgentOutputs[2].label,
+            status: "completed",
+            outputs: [{ label: toolAgentOutputs[2].label, value: toolAgentOutputs[2].value }],
+            timestamp: new Date(),
+          });
+          
+          if (ctx) {
+            allMessages.push({
+              id: `msg-${Date.now()}-${messageId++}`,
+              type: "assistant",
+              content: `📋 **STP Requirements Parsed**\n\nMaterial breakdown for strategy execution:\n- Primary Component: ${dataset.insufficientItem} (${Math.floor(Number(dataset.requiredQty) * 0.6)} metric tons)\n- Secondary Component: ${dataset.sufficientItem} (${Math.floor(Number(dataset.requiredQty) * 0.4)} metric tons)\n\nInitiating inventory validation with Inventory Management Agent...`,
+              timestamp: new Date(),
+              agent: "orchestrator",
+            });
+          }
+        } else if (i === 5) {
+          allActions.push({
+            id: `tool-${strategyIdx}-${Date.now()}-3`,
+            agentType: "tool",
+            title: toolAgentOutputs[3].label,
+            status: "completed",
+            outputs: [{ label: toolAgentOutputs[3].label, value: toolAgentOutputs[3].value }],
+            timestamp: new Date(),
+          });
+          
+          if (ctx) {
+            allMessages.push({
+              id: `msg-${Date.now()}-${messageId++}`,
+              type: "assistant",
+              content: `📊 **Inventory Status Report**\n\nCurrent stock levels:\n- ${dataset.insufficientItem}: 0 metric tons ⚠️ **CRITICAL SHORTAGE**\n- ${dataset.sufficientItem}: ${Math.floor(Number(dataset.requiredQty) * 0.5)} metric tons ✅ **SUFFICIENT**\n\n⚠️ Identified gap conflicts with strategy "${ctx.strategy}" timeline (${ctx.timeline}). Escalating to Procurement Agent for emergency sourcing...`,
+              timestamp: new Date(),
+              agent: "inventory",
+            });
+            
+            allMessages.push({
+              id: `msg-${Date.now()}-${messageId++}`,
+              type: "assistant",
+              content: `🔄 **Orchestrator Decision**\n\nBased on inventory gap analysis, coordinating with Procurement Agent to execute emergency material acquisition. This action directly supports the strategy implementation timeline.`,
+              timestamp: new Date(),
+              agent: "orchestrator",
+            });
+          }
+        } else if (i === 6) {
+          allActions.push({
+            id: `tool-${strategyIdx}-${Date.now()}-4`,
+            agentType: "tool",
+            title: toolAgentOutputs[4].label,
+            status: "completed",
+            outputs: [{ label: toolAgentOutputs[4].label, value: toolAgentOutputs[4].value }],
+            timestamp: new Date(),
+          });
+          
+          if (ctx) {
+            allMessages.push({
+              id: `msg-${Date.now()}-${messageId++}`,
+              type: "assistant",
+              content: `✅ **Procurement Order Confirmed**\n\n**Order Details:**\n- Order ID: ${dataset.orderId}\n- Material: ${dataset.insufficientItem}\n- Quantity: ${Math.floor(Number(dataset.requiredQty) * 0.8)} metric tons\n- Estimated Cost Impact: ${ctx.cost}\n- Delivery Alignment: ${ctx.timeline}\n\n📦 This procurement directly supports strategy: "${ctx.strategy}"\n\nOrder tracking activated. Supplier coordination in progress.`,
+              timestamp: new Date(),
+              agent: "procurement",
+            });
+          }
+        }
+      });
+    }
+
+    // Add final summary message
+    if (actionContexts && actionContexts.length > 0) {
+      const summaryText = actionContexts.map((ctx, idx) => {
+        const dataset = workflowDatasets[idx];
+        return `\n**Strategy ${idx + 1}: ${ctx.strategy}**\n- Procurement Order: ${dataset?.orderId}\n- Material: ${ctx.product} (SKU: ${ctx.sku})\n- Quantity Ordered: ${Math.floor(Number(ctx.qty) * 0.8)} metric tons\n- Cost Impact: ${ctx.cost}\n- Implementation Timeline: ${ctx.timeline}\n- Expected Business Impact: ${ctx.impact}`;
+      }).join('\n\n');
+      
+      allMessages.push({
+        id: `msg-${Date.now()}-${messageId++}`,
+        type: "assistant",
+        content: `🎯 **Multi-Strategy Execution Summary**\n\nI have successfully coordinated the implementation of ${actionContexts.length} mitigation strateg${actionContexts.length !== 1 ? 'ies' : 'y'} through automated agent orchestration:\n${summaryText}\n\n✅ **Next Steps:**\n1. Monitor supplier delivery progress\n2. Track procurement order fulfillment\n3. Update stakeholders on strategy execution status\n4. Prepare for production scheduling upon material receipt\n\n📊 **Confidence Level:** High - All agent coordination completed successfully\n\n💬 If you need to adjust any strategy parameters or have questions about the execution plan, I'm here to assist!`,
+        timestamp: new Date(),
+        agent: "orchestrator",
+      });
+    }
+
+    // Add end action
+    allActions.push({
+      id: `end-${Date.now()}`,
+      agentType: "orchestrator",
+      title: "End",
+      status: "completed",
+      timestamp: new Date(),
+    });
+
+    // Set all state at once
+    setMessages(allMessages);
+    setAgentActions(allActions);
   };
 
   const handleSendMessage = async () => {
@@ -584,7 +794,7 @@ export function WorkflowProcessor({
           <ScrollArea className="h-[600px]">
             <div className="p-6 space-y-6">
               {/* Orchestrator Section */}
-              <div className={cn("space-y-4", !hasExecutedOnce && "animate-in fade-in slide-in-from-left-5 duration-500")}>
+              <div className={cn("space-y-4", shouldAnimate && "animate-in fade-in slide-in-from-left-5 duration-500")}>
                 <div className="flex items-start gap-3">
                   <div className="w-10 h-10 rounded-full bg-primary/20 flex items-center justify-center flex-shrink-0">
                     <Bot className="w-5 h-5 text-primary" />
@@ -625,7 +835,7 @@ export function WorkflowProcessor({
 
               {/* Tool Agent Section */}
               {agentActions.some((a) => a.agentType === "tool") && (
-                <div className={cn("space-y-4 pl-8", !hasExecutedOnce && "animate-in fade-in slide-in-from-right-5 duration-500")}>
+                <div className={cn("space-y-4 pl-8", shouldAnimate && "animate-in fade-in slide-in-from-right-5 duration-500")}>
                   <div className="flex items-start gap-3">
                     <div className="w-10 h-10 rounded-full bg-cyan-500/20 flex items-center justify-center flex-shrink-0">
                       <Bot className="w-5 h-5 text-cyan-500" />
