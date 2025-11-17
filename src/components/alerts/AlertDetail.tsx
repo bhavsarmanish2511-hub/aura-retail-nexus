@@ -1293,8 +1293,10 @@ export function AlertDetail({ alertId, onBack }: AlertDetailProps) {
 
       {/* Deep Dive Dialog */}
       <Dialog open={deepDiveActionId !== null} onOpenChange={(open) => !open && setDeepDiveActionId(null)}>
+        {deepDiveActionId && (
         <DialogContent className="max-w-4xl max-h-[80vh] overflow-y-auto">
-          {deepDiveActionId && (() => {
+          <DialogTitle className="sr-only">Deep Dive Analysis</DialogTitle>
+          {(() => {
             const action = alertData.recommendations.find(r => r.id === deepDiveActionId);
             
             // Deep dive data based on action ID
@@ -1762,6 +1764,7 @@ export function AlertDetail({ alertId, onBack }: AlertDetailProps) {
             );
           })()}
         </DialogContent>
+        )}
       </Dialog>
     </div>
   );
