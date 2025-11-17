@@ -1294,13 +1294,6 @@ export function AlertDetail({ alertId, onBack }: AlertDetailProps) {
       {/* Deep Dive Dialog */}
       <Dialog open={deepDiveActionId !== null} onOpenChange={(open) => !open && setDeepDiveActionId(null)}>
         <DialogContent className="max-w-4xl max-h-[80vh] overflow-y-auto">
-          <DialogHeader>
-            <DialogTitle>Deep Dive Analysis</DialogTitle>
-            <DialogDescription>
-              Detailed analysis and data for the selected recommendation
-            </DialogDescription>
-          </DialogHeader>
-          
           {deepDiveActionId && (() => {
             const action = alertData.recommendations.find(r => r.id === deepDiveActionId);
             
