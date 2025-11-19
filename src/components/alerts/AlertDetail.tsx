@@ -6,13 +6,13 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Progress } from "@/components/ui/progress";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { cn } from "@/lib/utils";
-import { 
+import {
   ArrowLeft,
   ArrowRight,
-  AlertTriangle, 
-  TrendingDown, 
-  MapPin, 
-  Factory, 
+  AlertTriangle,
+  TrendingDown,
+  MapPin,
+  Factory,
   Clock,
   DollarSign,
   Users,
@@ -81,7 +81,7 @@ export function AlertDetail({ alertId, onBack }: AlertDetailProps) {
         impact: "€15.2M tariff-driven cost increase",
         region: "Global",
         affectedAssets: ["Base Oils (EMEA)", "Additives (Americas)", "Motor Oils (India)", "Transmission Fluids (APAC)"],
-        
+
         affectedProducts: [
           {
             category: "Base Oils - Group III",
@@ -125,7 +125,7 @@ export function AlertDetail({ alertId, onBack }: AlertDetailProps) {
             ]
           }
         ],
-        
+
         rootCause: {
           primary: "Coordinated Global Tariff & Trade Policy Changes",
           contributing: [
@@ -177,7 +177,7 @@ export function AlertDetail({ alertId, onBack }: AlertDetailProps) {
             timeline: "60-90 days phased implementation"
           },
           {
-            id: "2", 
+            id: "2",
             action: "Strategic Price Adjustments & Contract Amendments",
             description: "Implement tiered pricing strategy: 70% tariff pass-through on flex contracts, 40% recovery on locked OEM contracts through renegotiation, value-added service bundles to offset customer price resistance.",
             impact: "Recover €10.6M (70%) of margin erosion through pricing and contract amendments",
@@ -188,7 +188,7 @@ export function AlertDetail({ alertId, onBack }: AlertDetailProps) {
           },
           {
             id: "3",
-            action: "Accelerated Inventory Build - Pre-Tariff Stock", 
+            action: "Accelerated Inventory Build - Pre-Tariff Stock",
             description: "Fast-track in-transit shipments and place emergency orders for Base Oils, Additives, and Motor Oils at pre-tariff rates. Build 8-10 week strategic buffer across affected categories to provide sourcing transition runway.",
             impact: "10-week margin protection at pre-tariff cost, buffer for sourcing diversification",
             cost: "€4.8M working capital (temporary inventory spike, premium logistics)",
@@ -219,7 +219,7 @@ export function AlertDetail({ alertId, onBack }: AlertDetailProps) {
         ]
       };
     }
-    
+
     // Default data for other alerts (Base Oil Shortage scenario)
     return {
       id: alertId,
@@ -229,7 +229,7 @@ export function AlertDetail({ alertId, onBack }: AlertDetailProps) {
       impact: "€6M penalties + OTIF drop to 87%",
       region: "EMEA North",
       affectedAssets: ["Hamburg DC", "Rotterdam Plant", "Base Oil X", "Additive A-VMX320"],
-      
+
       rootCause: {
         primary: "Hamburg Port Disruption",
         contributing: [
@@ -276,7 +276,7 @@ export function AlertDetail({ alertId, onBack }: AlertDetailProps) {
           timeline: "24-48 hours"
         },
         {
-          id: "2", 
+          id: "2",
           action: "Intra-Regional Stock Transfer",
           description: "Transfer 2,400 MT Base Oil from APAC surplus to EMEA via expedited shipping",
           impact: "Cover 35% of shortfall, restore OTIF to 92%",
@@ -287,7 +287,7 @@ export function AlertDetail({ alertId, onBack }: AlertDetailProps) {
         },
         {
           id: "3",
-          action: "Customer Communication & Prioritization", 
+          action: "Customer Communication & Prioritization",
           description: "Proactive OEM communication with premium customer priority allocation",
           impact: "Reduce penalty exposure by 70%",
           cost: "€0",
@@ -353,21 +353,21 @@ export function AlertDetail({ alertId, onBack }: AlertDetailProps) {
               <ArrowLeft className="h-4 w-4 mr-2" />
               Back to Command Center
             </Button>
-            
+
             <Badge variant="secondary" className="bg-gradient-critical text-critical-foreground">
               <AlertTriangle className="h-3 w-3 mr-1" />
               CRITICAL
             </Badge>
-            
+
             <div className="text-xs text-muted-foreground flex items-center space-x-1">
               <Clock className="h-3 w-3" />
               <span>Detected {alertData.timeDetected}</span>
             </div>
           </div>
-          
+
           {alertId === "6" && (
-            <Button 
-              variant="ghost" 
+            <Button
+              variant="ghost"
               size="sm"
               onClick={() => window.open('http://localhost:8081', '_blank')}
               className="flex items-center gap-2"
@@ -381,7 +381,7 @@ export function AlertDetail({ alertId, onBack }: AlertDetailProps) {
         <h1 className="text-2xl font-bold text-foreground mb-2">
           {alertData.title}
         </h1>
-        
+
         <div className="flex items-center space-x-6 text-sm">
           <div className="flex items-center space-x-1 text-muted-foreground">
             <MapPin className="h-4 w-4" />
@@ -392,14 +392,14 @@ export function AlertDetail({ alertId, onBack }: AlertDetailProps) {
             <span>{alertData.impact}</span>
           </div>
           {/* Display active filters */}
-          {(filters.selectedRegion !== 'All Regions' || 
-            filters.selectedPlant !== 'All Plants' || 
-            filters.selectedSKU !== 'All SKUs' || 
+          {(filters.selectedRegion !== 'All Regions' ||
+            filters.selectedPlant !== 'All Plants' ||
+            filters.selectedSKU !== 'All SKUs' ||
             filters.selectedSupplier !== 'All Suppliers') && (
             <div className="flex items-center space-x-2">
               <Filter className="h-4 w-4 text-muted-foreground" />
               <span className="text-xs text-muted-foreground">
-                Active Filters: 
+                Active Filters:
                 {filters.selectedRegion !== 'All Regions' && ` Region: ${filters.selectedRegion}`}
                 {filters.selectedPlant !== 'All Plants' && ` Plant: ${filters.selectedPlant}`}
                 {filters.selectedSKU !== 'All SKUs' && ` SKU: ${filters.selectedSKU}`}
@@ -444,7 +444,7 @@ export function AlertDetail({ alertId, onBack }: AlertDetailProps) {
                           Initiating RCA Agent
                         </span>
                       </div>
-                      
+
                       <div className="flex items-center justify-between text-sm">
                         <span className={cn(
                           "font-medium transition-colors duration-300",
@@ -480,7 +480,7 @@ export function AlertDetail({ alertId, onBack }: AlertDetailProps) {
               <Card className="bg-gradient-card border-border shadow-card">
                 <div className="p-6">
                   <h3 className="text-lg font-semibold text-foreground mb-4">Root Cause Analysis Agent</h3>
-                  
+
                   <div className="space-y-4">
                     <div>
                       <h4 className="font-medium text-foreground mb-2">Primary Cause</h4>
@@ -511,7 +511,7 @@ export function AlertDetail({ alertId, onBack }: AlertDetailProps) {
               <Card className="bg-gradient-card border-border shadow-card">
                 <div className="p-6">
                   <h3 className="text-lg font-semibold text-foreground mb-4">Impact Simulation</h3>
-                  
+
                   <div className="space-y-4">
                     <div>
                       <h4 className="font-medium text-foreground mb-2">Financial Impact</h4>
@@ -593,7 +593,7 @@ export function AlertDetail({ alertId, onBack }: AlertDetailProps) {
                             <div className="text-xs text-muted-foreground">Financial Impact</div>
                           </div>
                         </div>
-                        
+
                         <div className="space-y-3 mt-4">
                           {productGroup.products.map((product, productIndex) => (
                             <div key={productIndex} className="bg-background/50 rounded-md p-3 border-l-2 border-primary">
@@ -687,8 +687,8 @@ export function AlertDetail({ alertId, onBack }: AlertDetailProps) {
                       </div>
                     </div>
 
-                    <Button 
-                      className="w-full" 
+                    <Button
+                      className="w-full"
                       variant="outline"
                       onClick={() => setDeepDiveActionId(action.id)}
                     >
@@ -709,15 +709,15 @@ export function AlertDetail({ alertId, onBack }: AlertDetailProps) {
                   <div className="p-6">
                     <h3 className="text-lg font-semibold text-foreground mb-2">Select Actions to Compare</h3>
                     <p className="text-muted-foreground text-sm mb-6">Choose 2 or more recommended actions to compare their potential impact</p>
-                    
+
                     <div className="space-y-4">
                       {alertData.recommendations.map((action) => (
-                        <div 
+                        <div
                           key={action.id}
                           className={cn(
                             "border rounded-lg p-4 cursor-pointer transition-all duration-300",
-                            selectedActions.includes(action.id) 
-                              ? "border-primary bg-primary/10 shadow-md" 
+                            selectedActions.includes(action.id)
+                              ? "border-primary bg-primary/10 shadow-md"
                               : "border-border bg-secondary/20 hover:border-primary/50"
                           )}
                           onClick={() => toggleActionSelection(action.id)}
@@ -725,8 +725,8 @@ export function AlertDetail({ alertId, onBack }: AlertDetailProps) {
                           <div className="flex items-start space-x-3">
                             <div className={cn(
                               "w-5 h-5 rounded border-2 flex items-center justify-center mt-1 transition-colors",
-                              selectedActions.includes(action.id) 
-                                ? "border-primary bg-primary" 
+                              selectedActions.includes(action.id)
+                                ? "border-primary bg-primary"
                                 : "border-muted-foreground"
                             )}>
                               {selectedActions.includes(action.id) && (
@@ -753,7 +753,7 @@ export function AlertDetail({ alertId, onBack }: AlertDetailProps) {
                         {selectedActions.length === 1 && "Select 1 or more actions to compare"}
                         {selectedActions.length >= 2 && `${selectedActions.length} actions selected - Ready to simulate`}
                       </div>
-                      <Button 
+                      <Button
                         onClick={handleSimulate}
                         disabled={selectedActions.length < 2}
                         className="min-w-32"
@@ -771,8 +771,8 @@ export function AlertDetail({ alertId, onBack }: AlertDetailProps) {
                   <div className="p-6">
                     <div className="flex items-center justify-between mb-6">
                       <h3 className="text-lg font-semibold text-foreground">Comparison Results</h3>
-                      <Button 
-                        variant="outline" 
+                      <Button
+                        variant="outline"
                         size="sm"
                         onClick={resetSimulation}
                       >
@@ -826,7 +826,7 @@ export function AlertDetail({ alertId, onBack }: AlertDetailProps) {
                                     <span className="font-bold text-success">{roi}%</span>
                                   </div>
                                   <div className="w-full bg-secondary rounded-full h-3">
-                                    <div 
+                                    <div
                                       className={cn(
                                         "h-3 rounded-full transition-all duration-1000",
                                         index === 0 ? "bg-primary" : "bg-accent"
@@ -860,7 +860,7 @@ export function AlertDetail({ alertId, onBack }: AlertDetailProps) {
                                     <span className="font-bold text-success">{npv}</span>
                                   </div>
                                   <div className="w-full bg-secondary rounded-full h-3">
-                                    <div 
+                                    <div
                                       className={cn(
                                         "h-3 rounded-full transition-all duration-1000",
                                         index === 0 ? "bg-primary" : "bg-accent"
@@ -899,7 +899,7 @@ export function AlertDetail({ alertId, onBack }: AlertDetailProps) {
                                     )}>{risk}</span>
                                   </div>
                                   <div className="w-full bg-secondary rounded-full h-3">
-                                    <div 
+                                    <div
                                       className={cn(
                                         "h-3 rounded-full transition-all duration-1000",
                                         risk === "Low" && "bg-success",
@@ -935,7 +935,7 @@ export function AlertDetail({ alertId, onBack }: AlertDetailProps) {
                                     <span className="font-bold text-foreground">{complexity}</span>
                                   </div>
                                   <div className="w-full bg-secondary rounded-full h-3">
-                                    <div 
+                                    <div
                                       className={cn(
                                         "h-3 rounded-full transition-all duration-1000",
                                         index === 0 ? "bg-primary" : "bg-accent"
@@ -958,7 +958,7 @@ export function AlertDetail({ alertId, onBack }: AlertDetailProps) {
                   <div className="p-6">
                     <h3 className="text-lg font-semibold text-foreground mb-4">Choose Actions to Execute</h3>
                     <p className="text-muted-foreground text-sm mb-6">Select one or more of the compared actions to trigger workflows simultaneously</p>
-                    
+
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                       {selectedActions.map((actionId) => {
                         const action = alertData.recommendations.find(a => a.id === actionId);
@@ -978,8 +978,8 @@ export function AlertDetail({ alertId, onBack }: AlertDetailProps) {
                                   </Badge>
                                 )}
                               </div>
-                              <Button 
-                                className="w-full" 
+                              <Button
+                                className="w-full"
                                 disabled={isExecuted}
                                 onClick={() => {
                                   triggerWorkflow(actionId);
@@ -1008,8 +1008,8 @@ export function AlertDetail({ alertId, onBack }: AlertDetailProps) {
                         <div className="text-sm text-muted-foreground">
                           {executedActions.length} {executedActions.length === 1 ? 'action' : 'actions'} executed
                         </div>
-                        <Button 
-                          variant="outline" 
+                        <Button
+                          variant="outline"
                           className="w-full"
                           onClick={resetSimulation}
                         >
@@ -1036,7 +1036,7 @@ export function AlertDetail({ alertId, onBack }: AlertDetailProps) {
                         {executedActions.length} {executedActions.length === 1 ? 'Workflow' : 'Workflows'} Initiated
                       </h3>
                     </div>
-                    
+
                     <div className="space-y-3 mb-6">
                       {executedActions.map((actionId, index) => {
                         const action = alertData.recommendations.find(r => r.id === actionId);
@@ -1057,7 +1057,7 @@ export function AlertDetail({ alertId, onBack }: AlertDetailProps) {
                         );
                       })}
                     </div>
-                    
+
                     <div className="bg-primary/10 border border-primary/20 rounded-lg p-4">
                       <p className="text-foreground">
                         Teams notifications sent and cases created in Castrol Workflow Management System.
@@ -1105,7 +1105,7 @@ export function AlertDetail({ alertId, onBack }: AlertDetailProps) {
                         Tracking {executedActions.length} {executedActions.length === 1 ? 'Strategy' : 'Strategies'}
                       </Badge>
                     </div>
-                    
+
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                       {executedActions.map((actionId, index) => {
                         const action = alertData.recommendations.find(r => r.id === actionId);
@@ -1298,7 +1298,7 @@ export function AlertDetail({ alertId, onBack }: AlertDetailProps) {
           <DialogTitle className="sr-only">Deep Dive Analysis</DialogTitle>
           {(() => {
             const action = alertData.recommendations.find(r => r.id === deepDiveActionId);
-            
+
             // Deep dive data based on action ID
             const getDeepDiveData = () => {
               if (deepDiveActionId === "1") {
@@ -1519,7 +1519,7 @@ export function AlertDetail({ alertId, onBack }: AlertDetailProps) {
                   ]
                 };
               }
-              
+
               // Default for Base Oil Shortage scenario actions
               if (deepDiveActionId === "1") {
                 return {
@@ -1695,7 +1695,7 @@ export function AlertDetail({ alertId, onBack }: AlertDetailProps) {
                   ]
                 };
               }
-              
+
               return {
                 title: "Action Analysis",
                 overview: "Detailed breakdown and supporting data for this recommended action.",
@@ -1714,7 +1714,7 @@ export function AlertDetail({ alertId, onBack }: AlertDetailProps) {
             };
 
             const deepDiveData = getDeepDiveData();
-            
+
             return (
               <div className="space-y-6">
                 {/* Header */}
