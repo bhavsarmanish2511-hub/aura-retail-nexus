@@ -1,5 +1,4 @@
 import { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -38,7 +37,6 @@ interface AlertDetailProps {
 }
 
 export function AlertDetail({ alertId, onBack }: AlertDetailProps) {
-  const navigate = useNavigate();
   const { filters } = useDashboardFilters();
   const [executedActions, setExecutedActions] = useState<string[]>([]);
   const [rcaProgress, setRcaProgress] = useState(0);
@@ -47,6 +45,7 @@ export function AlertDetail({ alertId, onBack }: AlertDetailProps) {
   const [showSimulation, setShowSimulation] = useState(false);
   const [shouldAnimateWorkflow, setShouldAnimateWorkflow] = useState(false);
   const [deepDiveActionId, setDeepDiveActionId] = useState<string | null>(null);
+  const [activeTab, setActiveTab] = useState("understand");
 
   // Log filters to verify they persist
   useEffect(() => {
@@ -314,25 +313,13 @@ export function AlertDetail({ alertId, onBack }: AlertDetailProps) {
   const alertData = getAlertData();
 
   const triggerWorkflow = (actionId: string) => {
-    // Add to executed actions
-    const newExecutedActions = executedActions.includes(actionId) 
-      ? executedActions 
-      : [...executedActions, actionId];
-    
-    // Get the executed action details
-    const executedActionDetails = newExecutedActions.map(id => {
-      const action = alertData.recommendations.find(r => r.id === id);
-      return action;
-    }).filter(Boolean);
-
-    // Navigate to Trigger Workflow page with action data
-    navigate('/trigger-workflow', {
-      state: {
-        executedActions: executedActionDetails,
-        alertData: {
-          affectedProducts: alertData.affectedProducts
-        }
+    setExecutedActions(prev => {
+      if (!prev.includes(actionId)) {
+        setShouldAnimateWorkflow(true); // Trigger animation on new execution
+        setActiveTab("workflow"); // Switch to workflow tab
+        return [...prev, actionId];
       }
+      return prev;
     });
   };
 
@@ -426,7 +413,7 @@ export function AlertDetail({ alertId, onBack }: AlertDetailProps) {
 
       {/* Content */}
       <div className="p-6">
-        <Tabs defaultValue="understand" className="space-y-6">
+        <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
           <TabsList className="grid w-full grid-cols-5">
             <TabsTrigger value="understand">Understand Alert</TabsTrigger>
             <TabsTrigger value="actions">Recommended Actions</TabsTrigger>
@@ -1099,7 +1086,7 @@ export function AlertDetail({ alertId, onBack }: AlertDetailProps) {
                   <Zap className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
                   <h3 className="text-lg font-semibold text-foreground mb-2">No Active Workflow</h3>
                   <p className="text-muted-foreground">
-                    Select an action from the "Recommended Actions" tab to trigger a workflow.
+                    Execute actions from Decision Simulator to trigger a workflow.
                   </p>
                 </div>
               </Card>
