@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -37,6 +38,7 @@ interface AlertDetailProps {
 }
 
 export function AlertDetail({ alertId, onBack }: AlertDetailProps) {
+  const navigate = useNavigate();
   const { filters } = useDashboardFilters();
   const [executedActions, setExecutedActions] = useState<string[]>([]);
   const [rcaProgress, setRcaProgress] = useState(0);
@@ -312,14 +314,26 @@ export function AlertDetail({ alertId, onBack }: AlertDetailProps) {
   const alertData = getAlertData();
 
   const triggerWorkflow = (actionId: string) => {
-    setExecutedActions(prev => {
-      if (!prev.includes(actionId)) {
-        setShouldAnimateWorkflow(true); // Trigger animation on new execution
-        return [...prev, actionId];
+    // Add to executed actions
+    const newExecutedActions = executedActions.includes(actionId) 
+      ? executedActions 
+      : [...executedActions, actionId];
+    
+    // Get the executed action details
+    const executedActionDetails = newExecutedActions.map(id => {
+      const action = alertData.recommendations.find(r => r.id === id);
+      return action;
+    }).filter(Boolean);
+
+    // Navigate to Trigger Workflow page with action data
+    navigate('/trigger-workflow', {
+      state: {
+        executedActions: executedActionDetails,
+        alertData: {
+          affectedProducts: alertData.affectedProducts
+        }
       }
-      return prev;
     });
-    // In real app, this would trigger actual workflow systems
   };
 
   const resetSimulation = () => {
