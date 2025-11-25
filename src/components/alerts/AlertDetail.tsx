@@ -561,41 +561,51 @@ export function AlertDetail({ alertId, onBack }: AlertDetailProps) {
                 <div className="p-6">
                   <h3 className="text-lg font-semibold text-foreground mb-4">Affected Products by Category</h3>
                   <div className="space-y-6">
-                    {alertData.affectedProducts.map((productGroup, groupIndex) => (
-                      <div key={groupIndex} className="border border-border rounded-lg p-4 bg-secondary/10">
-                        <div className="flex items-start justify-between mb-3">
-                          <div className="space-y-1">
-                            <h4 className="font-semibold text-foreground">{productGroup.category}</h4>
-                            <div className="flex flex-wrap gap-2 text-xs">
-                              <Badge variant="outline" className="font-mono">HSN: {productGroup.hsnCode}</Badge>
-                              <Badge variant="destructive" className="text-xs">{productGroup.tariffChange}</Badge>
-                            </div>
-                          </div>
-                          <div className="text-right">
-                            <div className="text-lg font-bold text-critical">{productGroup.impact}</div>
-                            <div className="text-xs text-muted-foreground">Financial Impact</div>
-                          </div>
-                        </div>
-
-                        <div className="space-y-3 mt-4">
-                          {productGroup.products.map((product, productIndex) => (
-                            <div key={productIndex} className="bg-background/50 rounded-md p-3 border-l-2 border-primary">
-                              <div className="font-medium text-foreground text-sm mb-2">{product.name}</div>
-                              <div className="space-y-1 text-xs">
-                                <div className="flex items-start">
-                                  <Package className="h-3 w-3 mr-1 mt-0.5 text-muted-foreground flex-shrink-0" />
-                                  <span className="text-muted-foreground">SKUs: <span className="text-foreground font-mono">{product.sku}</span></span>
-                                </div>
-                                <div className="flex items-start">
-                                  <Truck className="h-3 w-3 mr-1 mt-0.5 text-muted-foreground flex-shrink-0" />
-                                  <span className="text-muted-foreground">Route: <span className="text-foreground">{product.route}</span></span>
-                                </div>
+                    {alertData.affectedProducts.map((productGroup, groupIndex) => {
+                      // Define product-level cost breakdowns
+                      const productCosts = groupIndex === 0 
+                        ? ["$2.1M", "$1.8M", "$1.3M"] // Performance Additives: VM-350, PPD-220, DA-500
+                        : ["$1.4M", "$1.1M", "$0.6M"]; // US Motor Oil Products: GTX, EDGE, Transmax
+                      
+                      return (
+                        <div key={groupIndex} className="border border-border rounded-lg p-4 bg-secondary/10">
+                          <div className="flex items-start justify-between mb-3">
+                            <div className="space-y-1">
+                              <h4 className="font-semibold text-foreground">{productGroup.category}</h4>
+                              <div className="flex flex-wrap gap-2 text-xs">
+                                <Badge variant="outline" className="font-mono">HSN: {productGroup.hsnCode}</Badge>
+                                <Badge variant="destructive" className="text-xs">{productGroup.tariffChange}</Badge>
                               </div>
                             </div>
-                          ))}
+                            <div className="text-right">
+                              <div className="text-lg font-bold text-critical">{productGroup.impact}</div>
+                              <div className="text-xs text-muted-foreground">Financial Impact</div>
+                            </div>
+                          </div>
+
+                          <div className="space-y-3 mt-4">
+                            {productGroup.products.map((product, productIndex) => (
+                              <div key={productIndex} className="bg-background/50 rounded-md p-3 border-l-2 border-primary">
+                                <div className="flex items-start justify-between mb-2">
+                                  <div className="font-medium text-foreground text-sm">{product.name}</div>
+                                  <div className="text-sm font-bold text-critical ml-2">{productCosts[productIndex]}</div>
+                                </div>
+                                <div className="space-y-1 text-xs">
+                                  <div className="flex items-start">
+                                    <Package className="h-3 w-3 mr-1 mt-0.5 text-muted-foreground flex-shrink-0" />
+                                    <span className="text-muted-foreground">SKUs: <span className="text-foreground font-mono">{product.sku}</span></span>
+                                  </div>
+                                  <div className="flex items-start">
+                                    <Truck className="h-3 w-3 mr-1 mt-0.5 text-muted-foreground flex-shrink-0" />
+                                    <span className="text-muted-foreground">Route: <span className="text-foreground">{product.route}</span></span>
+                                  </div>
+                                </div>
+                              </div>
+                            ))}
+                          </div>
                         </div>
-                      </div>
-                    ))}
+                      );
+                    })}
                   </div>
                 </div>
               </Card>
@@ -974,10 +984,10 @@ export function AlertDetail({ alertId, onBack }: AlertDetailProps) {
                                     <CheckCircle className="h-4 w-4 mr-2" />
                                     Executed
                                   </>
-                                ) : (
+                                 ) : (
                                   <>
                                     <PlayCircle className="h-4 w-4 mr-2" />
-                                    Execute
+                                    Execute &lt;Action On {alertId === "6" ? "Tariff Manager" : "Supply Chain"}&gt;
                                   </>
                                 )}
                               </Button>
