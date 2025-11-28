@@ -98,7 +98,7 @@ export function AlertDetail({ alertId, onBack }: AlertDetailProps) {
           {
             category: "US Motor Oil Products (Affected by Additive Cost)",
             hsnCode: "2710.19.31, 2710.19.41, 2710.19.85",
-            impact: "$3.1M margin compression",
+            impact: "$3.1M Increase in landed cost",
             tariffChange: "Indirect impact from additive cost increase",
             products: [
               { name: "Castrol GTX 5W-30 Conventional Motor Oil", sku: "GTX-5W30-1QT, GTX-5W30-5QT", route: "Houston Blending → US Retail Network" },
@@ -115,7 +115,7 @@ export function AlertDetail({ alertId, onBack }: AlertDetailProps) {
             "85% of US additive supply sourced from China (Shenzhen, Ningbo, Guangzhou manufacturing hubs)",
             "Limited US domestic additive capacity - Lubrizol and Afton Chemical at 92% capacity utilization",
             "Long supplier qualification cycles (6-9 months) preventing rapid supplier diversification",
-            "No advance industry consultation - tariff published with 30-day enforcement window",
+            "No advance industry consultation - tariff published with 2 months enforcement window",
             "US lubricant blending facilities (Houston, Los Angeles, Midwest) critically dependent on Chinese additives"
           ],
           timeline: [
@@ -130,7 +130,7 @@ export function AlertDetail({ alertId, onBack }: AlertDetailProps) {
 
         impactData: {
           financial: {
-            immediate: "$3.2M immediate landed cost increase on in-transit shipments",
+            immediate: "$3.2M Indirect impact from additive cost increase",
             penalties: "$5.2M annual tariff exposure (+$1.8M YoY increase)",
             total: "$8.4M total annual margin erosion including pricing pressure"
           },
@@ -500,11 +500,11 @@ export function AlertDetail({ alertId, onBack }: AlertDetailProps) {
                       <h4 className="font-medium text-foreground mb-2">Financial Impact</h4>
                       <div className="space-y-2">
                         <div className="flex justify-between text-sm">
-                          <span className="text-muted-foreground">Immediate Revenue Risk</span>
+                          <span className="text-muted-foreground">Indirect Cost</span>
                           <span className="text-critical font-medium">{alertData.impactData.financial.immediate}</span>
                         </div>
                         <div className="flex justify-between text-sm">
-                          <span className="text-muted-foreground">OEM Penalties</span>
+                          <span className="text-muted-foreground">Direct Cost</span>
                           <span className="text-critical font-medium">{alertData.impactData.financial.penalties}</span>
                         </div>
                         <div className="border-t border-border pt-2">
@@ -563,10 +563,10 @@ export function AlertDetail({ alertId, onBack }: AlertDetailProps) {
                   <div className="space-y-6">
                     {alertData.affectedProducts.map((productGroup, groupIndex) => {
                       // Define product-level cost breakdowns
-                      const productCosts = groupIndex === 0 
+                      const productCosts = groupIndex === 0
                         ? ["$2.1M", "$1.8M", "$1.3M"] // Performance Additives: VM-350, PPD-220, DA-500
                         : ["$1.4M", "$1.1M", "$0.6M"]; // US Motor Oil Products: GTX, EDGE, Transmax
-                      
+
                       return (
                         <div key={groupIndex} className="border border-border rounded-lg p-4 bg-secondary/10">
                           <div className="flex items-start justify-between mb-3">
