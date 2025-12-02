@@ -26,7 +26,8 @@ import {
   Eye,
   BarChart3,
   TrendingUp,
-  Filter
+  Filter,
+  FileDown
 } from "lucide-react";
 import { WorkflowProcessor } from "@/components/workflow/WorkflowProcessor";
 import { useDashboardFilters } from "@/contexts/DashboardFiltersContext";
@@ -1229,6 +1230,247 @@ export function AlertDetail({ alertId, onBack }: AlertDetailProps) {
                                 <span className="text-muted-foreground">Confidence</span>
                                 <span className="text-success font-medium">{executedAction?.confidence}%</span>
                               </div>
+                              <div className="flex justify-between">
+                                <span className="text-muted-foreground">Compliance</span>
+                                <span className="text-success font-medium">HSN Code Revalidated</span>
+                              </div>
+                            </div>
+                            
+                            {/* Document Download Buttons */}
+                            <div className="space-y-2 mt-4">
+                              <Button 
+                                variant="outline" 
+                                size="sm" 
+                                className="w-full justify-start gap-2"
+                                onClick={() => {
+                                  // Generate and download Revised Country of Origin document
+                                  const actionId = executedAction?.id || '001';
+                                  const actionName = executedAction?.action || 'N/A';
+                                  const today = new Date().toLocaleDateString();
+                                  const nextYear = new Date(Date.now() + 365 * 24 * 60 * 60 * 1000).toLocaleDateString();
+                                  const effectiveDate = new Date(Date.now() - 60 * 24 * 60 * 60 * 1000).toLocaleDateString();
+                                  const timestamp = Date.now();
+                                  const isoDate = new Date().toISOString();
+                                  
+                                  const docContent = `REVISED COUNTRY OF ORIGIN CERTIFICATE
+
+Certificate Number: COO-US-2025-${actionId}
+Issue Date: ${today}
+Valid Until: ${nextYear}
+
+PRODUCT INFORMATION:
+Product: ${actionName}
+HSN Code: 3811.21.10, 3811.21.20, 3811.21.30
+Category: Performance Additives
+
+ORIGIN VERIFICATION:
+Primary Origin: United States
+Manufacturing Facilities: Lubrizol USA (Ohio), Afton Chemical (Virginia)
+Compliance Status: HSN Code Revalidated
+Certificate Validity: Active
+
+TARIFF & TRADE INFORMATION:
+Current Tariff Rate: 35% (US Section 301 - China)
+Previous Tariff Rate: 25% (US Section 301 - China)
+Effective Date: ${effectiveDate}
+Tariff Classification: Additional Duties on Chinese Imports
+Trade Agreement: Section 301 Trade Act Investigation
+
+DOMESTIC CONTENT VERIFICATION:
+US Content Percentage: 100%
+Qualifying Processing: Yes
+Regional Value Content: Compliant
+Rules of Origin: Substantial Transformation in USA
+
+SUPPLIER DETAILS:
+Primary Supplier: Lubrizol USA
+Address: 29400 Lakeland Blvd, Wickliffe, OH 44092
+Certification: ISO 9001:2015, API Certified
+
+Secondary Supplier: Afton Chemical Corporation
+Address: 500 Spring St, Richmond, VA 23219
+Certification: ISO 9001:2015, IATF 16949
+
+CUSTOMS & COMPLIANCE:
+Customs Broker: American Logistics Solutions
+Entry Number: US-${timestamp}
+Port of Entry: Los Angeles, CA / Long Beach, CA
+Importer of Record: Castrol Americas Inc.
+
+CERTIFICATE AUTHORITY:
+Issued By: US Customs and Border Protection
+Certifying Officer: Trade Compliance Department
+Contact: trade.compliance@castrol.com
+Phone: +1-800-462-0835
+
+This certificate confirms that the products listed above meet the country of origin requirements 
+and comply with all applicable US trade regulations and tariff classifications.
+
+Digitally Signed and Verified
+${isoDate}`;
+                                  
+                                  const blob = new Blob([docContent], { type: 'text/plain' });
+                                  const url = URL.createObjectURL(blob);
+                                  const a = document.createElement('a');
+                                  a.href = url;
+                                  a.download = `Revised_Country_of_Origin_${actionId}.txt`;
+                                  document.body.appendChild(a);
+                                  a.click();
+                                  document.body.removeChild(a);
+                                  URL.revokeObjectURL(url);
+                                }}
+                              >
+                                <FileDown className="h-4 w-4" />
+                                Revised Country of Origin
+                              </Button>
+
+                              {/* Contract Addendum button - only visible for strategy 2 */}
+                              {executedAction?.id === "2" && (
+                                <Button 
+                                  variant="outline" 
+                                  size="sm" 
+                                  className="w-full justify-start gap-2"
+                                  onClick={() => {
+                                    // Generate and download Contract Addendum document
+                                    const actionId = executedAction?.id || '002';
+                                    const today = new Date().toLocaleDateString();
+                                    const effectiveDate = new Date(Date.now() - 60 * 24 * 60 * 60 * 1000).toLocaleDateString();
+                                    const timestamp = Date.now();
+                                    const isoDate = new Date().toISOString();
+                                    
+                                    const docContent = `CONTRACT ADDENDUM - TARIFF COST ADJUSTMENT PROVISIONS
+
+Addendum Number: CA-US-2025-${actionId}
+Effective Date: ${today}
+Contract Reference: Strategic Pricing Agreement - Americas Region
+
+PARTIES:
+Supplier: Castrol Americas Inc.
+Address: 1500 Valley Road, Wayne, NJ 07470
+Federal Tax ID: XX-XXXXXXX
+
+Customer: [Customer Name]
+Address: [Customer Address]
+Customer ID: [Customer ID]
+
+BACKGROUND:
+This Contract Addendum ("Addendum") is entered into to address the impact of new and 
+changed tariff regulations affecting imported petroleum additives under US Section 301 
+Trade Act provisions, specifically:
+
+- Chinese additive imports (HSN: 3811.21.10, 3811.21.20, 3811.21.30)
+- Tariff increase from 25% to 35% effective ${effectiveDate}
+- Estimated annual impact: $5.2M across Americas operations
+
+TARIFF ADJUSTMENT PROVISIONS:
+
+1. COST PASS-THROUGH MECHANISM
+   1.1 Flexible Retail Contracts: 85% tariff pass-through
+       - Applicable to: AutoZone, O'Reilly Auto Parts, NAPA Auto Parts
+       - Adjustment calculation: (New Tariff Rate - Old Tariff Rate) × Import Volume × 85%
+       - Price increase effective: 30 days from notice
+   
+   1.2 Locked OEM Contracts: 50% cost recovery
+       - Applicable to: GM, Ford Motor Company, OEM factory-fill programs
+       - Requires good-faith renegotiation
+       - Recovery through value-added programs and technical support
+
+2. PRICE ADJUSTMENT NOTIFICATION
+   2.1 Castrol shall provide written notice 30 days prior to price adjustment
+   2.2 Notice shall include:
+       - Specific tariff regulation reference
+       - Calculation methodology
+       - Effective date of adjustment
+       - Product SKUs affected
+
+3. DOCUMENTATION REQUIREMENTS
+   3.1 Castrol shall maintain and provide upon request:
+       - US Customs Entry Documents
+       - Tariff rate verification
+       - Import volume records
+       - Cost basis calculations
+
+4. DISPUTE RESOLUTION
+   4.1 Good faith negotiation period: 15 business days
+   4.2 Mediation if unresolved: American Arbitration Association
+   4.3 Governing law: State of New Jersey
+
+5. COST RECOVERY TIMELINE
+   5.1 Immediate implementation: Flexible retail contracts
+   5.2 Renegotiation period: 3 weeks for OEM contracts
+   5.3 Quarterly reconciliation of actual tariff costs vs. recovered amounts
+
+6. VOLUME RISK ACKNOWLEDGMENT
+   6.1 Parties acknowledge potential 3-5% volume reduction on price-sensitive segments
+   6.2 Both parties commit to maintaining strategic relationship
+   6.3 Performance review: Quarterly business reviews
+
+7. MITIGATION EFFORTS
+   7.1 Castrol commits to:
+       - Domestic supplier diversification (Lubrizol USA, Afton Chemical)
+       - Product reformulation programs
+       - Supply chain optimization
+   7.2 Cost savings from mitigation shared: 50/50 split after recovery of investment
+
+8. TERM AND TERMINATION
+   8.1 Effective upon signature by both parties
+   8.2 Remains in effect until tariff rate returns to pre-escalation levels
+   8.3 Either party may terminate with 90 days written notice
+
+9. VALUE-ADDED PROGRAMS (OEM CONTRACTS ONLY)
+   9.1 Extended product warranties: +6 months
+   9.2 Enhanced technical support: Dedicated account engineer
+   9.3 Priority allocation during supply constraints
+   9.4 Co-marketing opportunities
+
+10. ANNUAL REVIEW CLAUSE
+    10.1 Parties agree to annual review of tariff landscape
+    10.2 Adjustment provisions subject to mutual renegotiation
+    10.3 Market conditions and competitive factors to be considered
+
+FINANCIAL SUMMARY:
+Expected Cost Recovery: $4.4M (85% of tariff impact)
+Implementation Cost: $75K (contract renegotiation resources)
+Volume Risk: 3-5% on price-sensitive consumer segments
+Confidence Level: 80%
+
+SIGNATURES:
+
+For Castrol Americas Inc.:
+Name: ___________________________
+Title: Commercial Director - Americas
+Date: ${today}
+
+For [Customer]:
+Name: ___________________________
+Title: ___________________________
+Date: ___________________________
+
+WITNESS:
+Name: ___________________________
+Date: ___________________________
+
+This Addendum is a legally binding supplement to the existing supply agreement and 
+shall be governed by the terms of the original contract except as modified herein.
+
+Document ID: CA-${timestamp}
+Generated: ${isoDate}`;
+                                    
+                                    const blob = new Blob([docContent], { type: 'text/plain' });
+                                    const url = URL.createObjectURL(blob);
+                                    const a = document.createElement('a');
+                                    a.href = url;
+                                    a.download = `Contract_Addendum_Strategy2_${actionId}.txt`;
+                                    document.body.appendChild(a);
+                                    a.click();
+                                    document.body.removeChild(a);
+                                    URL.revokeObjectURL(url);
+                                  }}
+                                >
+                                  <FileDown className="h-4 w-4" />
+                                  Contract Addendum
+                                </Button>
+                              )}
                             </div>
                           </div>
                         </div>
