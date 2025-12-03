@@ -32,6 +32,7 @@ import {
 } from "lucide-react";
 import { WorkflowProcessor } from "@/components/workflow/WorkflowProcessor";
 import { useDashboardFilters } from "@/contexts/DashboardFiltersContext";
+import { TariffMeshDiagram } from "./TariffMeshDiagram";
 
 interface AlertDetailProps {
   alertId: string;
@@ -90,7 +91,7 @@ export function AlertDetail({ alertId, onBack }: AlertDetailProps) {
           {
             category: "Performance Additives",
             hsnCode: "3811.21.10, 3811.21.20, 3811.21.30",
-            impact: "$5.2M (+$1.8M YoY)",
+            impact: "$5.2M",
             tariffChange: "10% increase (25% → 35%) US Section 301 China Tariffs",
             products: [
               { name: "Viscosity Modifier VM-350 Polymeric", sku: "VM-350-BULK, VM-350-IBC", route: "Shenzhen, China → Los Angeles Port → US Blending Facilities" },
@@ -134,7 +135,7 @@ export function AlertDetail({ alertId, onBack }: AlertDetailProps) {
         impactData: {
           financial: {
             immediate: "$3.2M Indirect impact from additive cost increase",
-            penalties: "$5.2M annual tariff exposure (+$1.8M YoY increase)",
+            penalties: "$5.2M annual tariff exposure",
             total: "$8.4M total annual margin erosion including pricing pressure"
           },
           operational: {
@@ -1248,13 +1249,13 @@ export function AlertDetail({ alertId, onBack }: AlertDetailProps) {
                                 <span className="text-success font-medium">HSN Code Revalidated</span>
                               </div>
                             </div>
-                            
+
                             {/* Document Download Buttons */}
-                            <div className="space-y-2 mt-4">
-                              <Button 
-                                variant="outline" 
-                                size="sm" 
-                                className="w-full justify-start gap-2"
+                            <div className="flex gap-2 mt-4 justify-end">
+                              <Button
+                                variant="outline"
+                                size="sm"
+                                className="gap-2"
                                 onClick={() => {
                                   // Generate and download Revised Country of Origin document
                                   const actionId = executedAction?.id || '001';
@@ -1264,7 +1265,7 @@ export function AlertDetail({ alertId, onBack }: AlertDetailProps) {
                                   const effectiveDate = new Date(Date.now() - 60 * 24 * 60 * 60 * 1000).toLocaleDateString();
                                   const timestamp = Date.now();
                                   const isoDate = new Date().toISOString();
-                                  
+
                                   const docContent = `REVISED COUNTRY OF ORIGIN CERTIFICATE
 
 Certificate Number: COO-US-2025-${actionId}
@@ -1316,12 +1317,12 @@ Certifying Officer: Trade Compliance Department
 Contact: trade.compliance@castrol.com
 Phone: +1-800-462-0835
 
-This certificate confirms that the products listed above meet the country of origin requirements 
+This certificate confirms that the products listed above meet the country of origin requirements
 and comply with all applicable US trade regulations and tariff classifications.
 
 Digitally Signed and Verified
 ${isoDate}`;
-                                  
+
                                   const blob = new Blob([docContent], { type: 'text/plain' });
                                   const url = URL.createObjectURL(blob);
                                   const a = document.createElement('a');
@@ -1339,10 +1340,10 @@ ${isoDate}`;
 
                               {/* Contract Addendum button - only visible for strategy 2 */}
                               {executedAction?.id === "2" && (
-                                <Button 
-                                  variant="outline" 
-                                  size="sm" 
-                                  className="w-full justify-start gap-2"
+                                <Button
+                                  variant="outline"
+                                  size="sm"
+                                  className="gap-2"
                                   onClick={() => {
                                     // Generate and download Contract Addendum document
                                     const actionId = executedAction?.id || '002';
@@ -1350,7 +1351,7 @@ ${isoDate}`;
                                     const effectiveDate = new Date(Date.now() - 60 * 24 * 60 * 60 * 1000).toLocaleDateString();
                                     const timestamp = Date.now();
                                     const isoDate = new Date().toISOString();
-                                    
+
                                     const docContent = `CONTRACT ADDENDUM - TARIFF COST ADJUSTMENT PROVISIONS
 
 Addendum Number: CA-US-2025-${actionId}
@@ -1367,8 +1368,8 @@ Address: [Customer Address]
 Customer ID: [Customer ID]
 
 BACKGROUND:
-This Contract Addendum ("Addendum") is entered into to address the impact of new and 
-changed tariff regulations affecting imported petroleum additives under US Section 301 
+This Contract Addendum ("Addendum") is entered into to address the impact of new and
+changed tariff regulations affecting imported petroleum additives under US Section 301
 Trade Act provisions, specifically:
 
 - Chinese additive imports (HSN: 3811.21.10, 3811.21.20, 3811.21.30)
@@ -1382,7 +1383,7 @@ TARIFF ADJUSTMENT PROVISIONS:
        - Applicable to: AutoZone, O'Reilly Auto Parts, NAPA Auto Parts
        - Adjustment calculation: (New Tariff Rate - Old Tariff Rate) × Import Volume × 85%
        - Price increase effective: 30 days from notice
-   
+
    1.2 Locked OEM Contracts: 50% cost recovery
        - Applicable to: GM, Ford Motor Company, OEM factory-fill programs
        - Requires good-faith renegotiation
@@ -1463,12 +1464,12 @@ WITNESS:
 Name: ___________________________
 Date: ___________________________
 
-This Addendum is a legally binding supplement to the existing supply agreement and 
+This Addendum is a legally binding supplement to the existing supply agreement and
 shall be governed by the terms of the original contract except as modified herein.
 
 Document ID: CA-${timestamp}
 Generated: ${isoDate}`;
-                                    
+
                                     const blob = new Blob([docContent], { type: 'text/plain' });
                                     const url = URL.createObjectURL(blob);
                                     const a = document.createElement('a');
@@ -1560,7 +1561,7 @@ Generated: ${isoDate}`;
                         { label: "China Additive Imports (Current)", value: "$5.2M annual exposure to 35% US Section 301 tariff" },
                         { label: "Primary Chinese Suppliers", value: "Shenzhen, Ningbo, Guangzhou - VM-350, PPD-220, DA-500" },
                         { label: "US Import Dependency", value: "85% of US additive supply sourced from China" },
-                        { label: "Total US Tariff Impact", value: "$5.2M annual (+$1.8M YoY increase from 25% to 35%)" }
+                        { label: "Total US Tariff Impact", value: "$5.2M annual" }
                       ]
                     },
                     {
@@ -2015,125 +2016,16 @@ Generated: ${isoDate}`;
         )}
       </Dialog>
 
-      {/* Data Source Dialog */}
+      {/* Data Source Dialog - Now showing the full mesh diagram */}
       <Dialog open={showDataSourceDialog} onOpenChange={setShowDataSourceDialog}>
-        <DialogContent className="max-w-6xl max-h-[90vh] overflow-y-auto">
+        <DialogContent className="max-w-[95vw] max-h-[95vh] overflow-y-auto">
           <DialogHeader>
-            <DialogTitle>Alert Data Source & Backend Workflow</DialogTitle>
+            <DialogTitle>Tariff Alert - Agentic Intelligence Architecture</DialogTitle>
             <DialogDescription>
-              Complete backend architecture and data flow for the US Tariff Impact Alert system across all modules
+              Complete workflow mesh showing data sources, intelligent agents, and the 5-tab workflow system
             </DialogDescription>
           </DialogHeader>
-          <div className="mt-4 space-y-6">
-            <div className="p-4 bg-background rounded-lg border border-border overflow-x-auto">
-              <pre className="text-xs">
-{`graph TB
-    subgraph "Alert Detection Layer"
-        A1[Tariff Data Sources] -->|Real-time Feed| A2[Change Detection Engine]
-        A2 -->|Pattern Analysis| A3[Alert Generator]
-        A3 -->|Risk Scoring| A4[Priority Classification]
-        A4 -->|Threshold Breach| A5[Alert Trigger]
-    end
-
-    subgraph "1. Understand Alert Tab"
-        A5 -->|Alert ID| B1[Root Cause Analyzer]
-        B1 -->|Historical Data| B2[Tariff History DB]
-        B1 -->|Product Mapping| B3[HSN Code Database]
-        B1 -->|Supply Chain| B4[Sourcing Records]
-        B3 -->|Product SKUs| B5[Financial Impact Calculator]
-        B4 -->|Routes & Volumes| B5
-        B5 -->|Cost Models| B6[Impact Breakdown]
-        B6 -->|Visualization| B7[Product Category Matrix]
-    end
-
-    subgraph "2. Recommended Actions Tab"
-        B6 -->|Impact Data| C1[Strategy Engine]
-        C1 -->|Multi-criteria Analysis| C2[Strategy Generator]
-        C2 -->|Option 1| C3[Sourcing Diversification]
-        C2 -->|Option 2| C4[Absorption Strategy]
-        C2 -->|Option 3| C5[Cost Pass-through]
-        C3 & C4 & C5 -->|Financial Models| C6[Cost-Benefit Analyzer]
-        C6 -->|Risk Assessment| C7[Implementation Timeline]
-        C7 -->|Recommendations| C8[Action Cards]
-    end
-
-    subgraph "3. Decision Simulator Tab"
-        C8 -->|User Selection| D1[Simulation Engine]
-        D1 -->|What-If Scenarios| D2[Monte Carlo Simulator]
-        D2 -->|Market Conditions| D3[External Data APIs]
-        D2 -->|Tariff Projections| D4[Trade Policy DB]
-        D2 -->|Cost Drivers| D5[Financial Model]
-        D5 -->|Results| D6[Comparison Matrix]
-        D6 -->|Side-by-Side| D7[Metrics Dashboard]
-        D7 -->|Decision Support| D8[Action Selector]
-    end
-
-    subgraph "4. Trigger Workflow Tab"
-        D8 -->|Execute Command| E1[Workflow Orchestrator]
-        E1 -->|Action ID| E2[Task Dispatcher]
-        E2 -->|Sourcing| E3[Procurement System]
-        E2 -->|Contracts| E4[Legal Documentation]
-        E2 -->|Finance| E5[ERP Integration]
-        E2 -->|Compliance| E6[Regulatory Systems]
-        E3 & E4 & E5 & E6 -->|Status Updates| E7[Execution Tracker]
-        E7 -->|Real-time| E8[Progress Monitor]
-    end
-
-    subgraph "5. Track Impact Tab"
-        E8 -->|Monitoring| F1[Impact Tracker]
-        F1 -->|Cost Data| F2[Financial Systems]
-        F1 -->|Compliance| F3[HSN Validator]
-        F3 -->|Certification| F4[Document Generator]
-        F4 -->|COO Certificate| F5[Country of Origin Report]
-        F4 -->|Contract Terms| F6[Addendum Generator]
-        F2 -->|Performance| F7[KPI Calculator]
-        F7 -->|Actual vs Target| F8[Variance Analysis]
-        F8 -->|Dashboards| F9[Impact Visualization]
-    end
-
-    subgraph "Data Storage Layer"
-        G1[(Alert History DB)]
-        G2[(Product Master)]
-        G3[(Supplier DB)]
-        G4[(Financial Records)]
-        G5[(Compliance Logs)]
-        G6[(Document Store)]
-    end
-
-    subgraph "External Integrations"
-        H1[Customs API]
-        H2[Trade Policy Feeds]
-        H3[ERP System]
-        H4[Contract Management]
-        H5[Email/Notifications]
-    end
-
-    B2 & B3 & B4 -.->|Read/Write| G1 & G2 & G3
-    C6 & D5 -.->|Read/Write| G4
-    F3 & F4 -.->|Read/Write| G5 & G6
-    E3 & E4 & E5 & E6 -.->|API Calls| H1 & H2 & H3 & H4
-    E8 -.->|Notifications| H5
-
-    style A5 fill:#ff6b6b,stroke:#c92a2a,color:#fff
-    style B7 fill:#4ecdc4,stroke:#0ca4a5,color:#fff
-    style C8 fill:#45b7d1,stroke:#1a8ca9,color:#fff
-    style D7 fill:#96ceb4,stroke:#6ab090,color:#fff
-    style E8 fill:#feca57,stroke:#ee9f27,color:#000
-    style F9 fill:#48dbfb,stroke:#0abde3,color:#fff`}
-              </pre>
-            </div>
-            <div className="mt-6 p-4 bg-muted/50 rounded-lg">
-              <h4 className="font-semibold text-foreground mb-3">Workflow Summary</h4>
-              <div className="space-y-2 text-sm text-muted-foreground">
-                <p><strong className="text-foreground">Alert Detection:</strong> Real-time monitoring of tariff changes from government APIs and trade databases, with automated risk scoring and threshold-based triggering.</p>
-                <p><strong className="text-foreground">Understand Alert:</strong> Root cause analysis combining tariff history, HSN code mapping, sourcing records, and financial impact modeling to generate product-level breakdown.</p>
-                <p><strong className="text-foreground">Recommended Actions:</strong> Multi-criteria strategy generation using cost-benefit analysis, risk assessment, and implementation timeline modeling across sourcing, absorption, and pass-through options.</p>
-                <p><strong className="text-foreground">Decision Simulator:</strong> Monte Carlo simulation engine with what-if scenarios, external market data integration, and side-by-side comparison metrics for informed decision-making.</p>
-                <p><strong className="text-foreground">Trigger Workflow:</strong> Orchestrated execution across procurement, legal, finance, and compliance systems with real-time status tracking and progress monitoring.</p>
-                <p><strong className="text-foreground">Track Impact:</strong> Post-execution monitoring with financial reconciliation, HSN code validation, automated document generation (COO certificates, contract addendums), and KPI tracking with variance analysis.</p>
-              </div>
-            </div>
-          </div>
+          <TariffMeshDiagram />
         </DialogContent>
       </Dialog>
     </div>
