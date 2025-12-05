@@ -552,25 +552,7 @@ export function AlertDetail({ alertId, onBack }: AlertDetailProps) {
               </Card>
             </div>
 
-            {/* Timeline */}
-            <Card className="bg-gradient-card border-border shadow-card">
-              <div className="p-6">
-                <h3 className="text-lg font-semibold text-foreground mb-4">Event Timeline</h3>
-                <div className="space-y-4">
-                  {alertData.rootCause.timeline.map((event, index) => (
-                    <div key={index} className="flex items-start space-x-4">
-                      <div className="w-3 h-3 bg-primary rounded-full mt-1 flex-shrink-0" />
-                      <div className="space-y-1">
-                        <div className="text-sm font-medium text-foreground">{event.time}</div>
-                        <div className="text-sm text-muted-foreground">{event.event}</div>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            </Card>
-
-            {/* Affected Products - Show for Tariff Alert */}
+            {/* Affected Products - Show for Tariff Alert - Moved after Impact Simulation */}
             {alertId === "6" && alertData.affectedProducts && (
               <Card className="bg-gradient-card border-border shadow-card">
                 <div className="p-6">
@@ -626,25 +608,46 @@ export function AlertDetail({ alertId, onBack }: AlertDetailProps) {
               </Card>
             )}
 
-            {/* Affected Customers */}
-            <Card className="bg-gradient-card border-border shadow-card">
-              <div className="p-6">
-                <h3 className="text-lg font-semibold text-foreground mb-4">Customer Impact Assessment</h3>
-                <div className="space-y-3">
-                  {alertData.impactData.customers.map((customer, index) => (
-                    <div key={index} className="flex items-center justify-between p-3 bg-secondary/20 rounded-lg">
-                      <div className="space-y-1">
-                        <div className="font-medium text-foreground">{customer.name}</div>
-                        <div className="text-sm text-muted-foreground">{customer.impact}</div>
+            {/* Timeline and Customer Impact Assessment - Side by Side */}
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+              {/* Event Timeline */}
+              <Card className="bg-gradient-card border-border shadow-card">
+                <div className="p-6">
+                  <h3 className="text-lg font-semibold text-foreground mb-4">Event Timeline</h3>
+                  <div className="space-y-4">
+                    {alertData.rootCause.timeline.map((event, index) => (
+                      <div key={index} className="flex items-start space-x-4">
+                        <div className="w-3 h-3 bg-primary rounded-full mt-1 flex-shrink-0" />
+                        <div className="space-y-1">
+                          <div className="text-sm font-medium text-foreground">{event.time}</div>
+                          <div className="text-sm text-muted-foreground">{event.event}</div>
+                        </div>
                       </div>
-                      <Badge variant={customer.severity === "critical" ? "destructive" : "secondary"}>
-                        {customer.severity}
-                      </Badge>
-                    </div>
-                  ))}
+                    ))}
+                  </div>
                 </div>
-              </div>
-            </Card>
+              </Card>
+
+              {/* Customer Impact Assessment */}
+              <Card className="bg-gradient-card border-border shadow-card">
+                <div className="p-6">
+                  <h3 className="text-lg font-semibold text-foreground mb-4">Customer Impact Assessment</h3>
+                  <div className="space-y-3">
+                    {alertData.impactData.customers.map((customer, index) => (
+                      <div key={index} className="flex items-center justify-between p-3 bg-secondary/20 rounded-lg">
+                        <div className="space-y-1">
+                          <div className="font-medium text-foreground">{customer.name}</div>
+                          <div className="text-sm text-muted-foreground">{customer.impact}</div>
+                        </div>
+                        <Badge variant={customer.severity === "critical" ? "destructive" : "secondary"}>
+                          {customer.severity}
+                        </Badge>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </Card>
+            </div>
             </div>
             )}
           </TabsContent>
