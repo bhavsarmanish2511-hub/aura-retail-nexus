@@ -609,10 +609,10 @@ export function AlertDetail({ alertId, onBack }: AlertDetailProps) {
             )}
 
             {/* Timeline and Customer Impact Assessment - Side by Side */}
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               {/* Event Timeline */}
-              <Card className="bg-gradient-card border-border shadow-card">
-                <div className="p-6">
+              <Card className="bg-gradient-card border-border shadow-card h-full">
+                <div className="p-6 h-full">
                   <h3 className="text-lg font-semibold text-foreground mb-4">Event Timeline</h3>
                   <div className="space-y-4">
                     {alertData.rootCause.timeline.map((event, index) => (
@@ -629,8 +629,8 @@ export function AlertDetail({ alertId, onBack }: AlertDetailProps) {
               </Card>
 
               {/* Customer Impact Assessment */}
-              <Card className="bg-gradient-card border-border shadow-card">
-                <div className="p-6">
+              <Card className="bg-gradient-card border-border shadow-card h-full">
+                <div className="p-6 h-full">
                   <h3 className="text-lg font-semibold text-foreground mb-4">Customer Impact Assessment</h3>
                   <div className="space-y-3">
                     {alertData.impactData.customers.map((customer, index) => (
