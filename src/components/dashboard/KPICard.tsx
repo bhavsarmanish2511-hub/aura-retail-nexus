@@ -8,7 +8,7 @@ interface KPICardProps {
   unit?: string;
   trend: "up" | "down" | "neutral";
   trendValue: string;
-  color: "revenue" | "volume" | "otif" | "inventory" | "forecast" | "health" | "risk";
+  color: "revenue" | "volume" | "otif" | "inventory" | "forecast" | "health" | "risk" | "warning";
   className?: string;
   onClick?: () => void;
 }
