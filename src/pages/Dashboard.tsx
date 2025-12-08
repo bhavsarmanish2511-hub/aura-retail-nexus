@@ -25,7 +25,7 @@ function DashboardContent() {
   );
 
   // Get filtered data based on current filter selections
-  const kpiData = useMemo(() => 
+  const kpiData = useMemo(() =>
     getFilteredKPIData(
       filters.selectedProduct,
       filters.selectedRegion,
@@ -36,7 +36,7 @@ function DashboardContent() {
     [filters]
   );
 
-  const alertsData = useMemo(() => 
+  const alertsData = useMemo(() =>
     getFilteredAlerts(
       filters.selectedProduct,
       filters.selectedRegion,
@@ -47,7 +47,7 @@ function DashboardContent() {
     [filters]
   );
 
-  const aiInsights = useMemo(() => 
+  const aiInsights = useMemo(() =>
     getFilteredInsights(
       filters.selectedProduct,
       filters.selectedRegion,
@@ -105,7 +105,7 @@ function DashboardContent() {
             <Map className="w-4 h-4" />
             Supply Chain Alerts
           </Button>
-          {/* <Button 
+          {/* <Button
             variant={currentView === "ai" ? "default" : "outline"}
             onClick={() => handleViewChange("ai")}
             className="flex items-center gap-2"
@@ -142,8 +142,8 @@ function DashboardContent() {
             </section>
 
             <div className="h-[calc(100vh-200px)]">
-              <AIExecutiveBrief 
-                kpiData={kpiData} 
+              <AIExecutiveBrief
+                kpiData={kpiData}
                 alertsData={alertsData}
                 insights={aiInsights}
               />
@@ -162,9 +162,9 @@ function DashboardContent() {
                 </div>
                 <div className="space-y-3">
                   {alertsData.map((alert) => (
-                    <AlertCard 
-                      key={alert.id} 
-                      {...alert} 
+                    <AlertCard
+                      key={alert.id}
+                      {...alert}
                       onClick={() => handleAlertClick(alert.id)}
                     />
                   ))}

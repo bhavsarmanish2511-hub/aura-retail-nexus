@@ -91,7 +91,7 @@ export function AlertDetail({ alertId, onBack }: AlertDetailProps) {
           {
             category: "Performance Additives",
             hsnCode: "3811.21.10, 3811.21.20, 3811.21.30",
-            impact: "$5.2M",
+            impact: "$5.2M margin compression",
             tariffChange: "10% increase (25% → 35%) US Section 301 China Tariffs",
             products: [
               { name: "Viscosity Modifier VM-350 Polymeric", sku: "VM-350-BULK, VM-350-IBC", route: "Shenzhen, China → Los Angeles Port → US Blending Facilities" },
@@ -102,7 +102,7 @@ export function AlertDetail({ alertId, onBack }: AlertDetailProps) {
           {
             category: "US Motor Oil Products (Affected by Additive Cost)",
             hsnCode: "2710.19.31, 2710.19.41, 2710.19.85",
-            impact: "$3.1M Increase in landed cost",
+            impact: "$3.1M margin compression",
             tariffChange: "Indirect impact from additive cost increase",
             products: [
               { name: "Castrol GTX 5W-30 Conventional Motor Oil", sku: "GTX-5W30-1QT, GTX-5W30-5QT", route: "Houston Blending → US Retail Network" },
@@ -134,9 +134,9 @@ export function AlertDetail({ alertId, onBack }: AlertDetailProps) {
 
         impactData: {
           financial: {
-            immediate: "$3.2M Indirect impact from additive cost increase",
+            immediate: "$3.1M Indirect impact from additive cost increase",
             penalties: "$5.2M annual tariff exposure",
-            total: "$8.4M total annual margin erosion including pricing pressure"
+            total: "$8.3M total annual margin erosion including pricing pressure"
           },
           operational: {
             otif: "Contract renegotiations required for 52% of US automotive OEM and retail accounts",
@@ -862,8 +862,8 @@ export function AlertDetail({ alertId, onBack }: AlertDetailProps) {
                           <div className="space-y-4">
                             {selectedActions.map((actionId, index) => {
                               const action = alertData.recommendations.find(a => a.id === actionId);
-                              const npv = ["€3.2M", "€4.1M", "€2.8M", "€1.9M"][parseInt(actionId) - 1];
-                              const npvValue = [3.2, 4.1, 2.8, 1.9][parseInt(actionId) - 1];
+                              const npv = ["€3.1M", "€4.1M", "€2.8M", "€1.9M"][parseInt(actionId) - 1];
+                              const npvValue = [3.1, 4.1, 2.8, 1.9][parseInt(actionId) - 1];
                               return (
                                 <div key={actionId}>
                                   <div className="flex justify-between text-sm mb-2">
@@ -1156,13 +1156,13 @@ export function AlertDetail({ alertId, onBack }: AlertDetailProps) {
                     // Calculate dynamic impact based on executed action
                     if (executedAction?.id === "1") {
                       return [
-                        { label: "Tariff Cost Mitigation", current: "€8.5M", target: "€8.5M", progress: 30, status: "Regional sourcing diversification in progress" },
+                        { label: "Tariff Cost Mitigation", current: "€5.2M", target: "€8.5M", progress: 30, status: "Regional sourcing diversification in progress" },
                         { label: "Margin Restoration", current: "80%", target: "100%", progress: 45, status: "Target margins recovering" },
                         { label: "Supplier Qualification", current: "EU refineries & US suppliers activated", target: "", progress: 60, status: "Transition costs: €3.2M" }
                       ];
                     } else if (executedAction?.id === "2") {
                       return [
-                        { label: "Price Recovery", current: "€10.6M", target: "€15.2M", progress: 70, status: "Contract amendments in progress" },
+                        { label: "Price Recovery", current: "€5.2M", target: "€8.5M", progress: 70, status: "Contract amendments in progress" },
                         { label: "Customer Negotiations", current: "120 customers", target: "145 customers", progress: 45, status: "Commercial teams engaging" },
                         { label: "Volume Risk", current: "5-10%", target: "0%", progress: 35, status: "Monitoring price-sensitive segments" }
                       ];

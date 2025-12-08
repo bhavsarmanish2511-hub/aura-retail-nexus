@@ -50,7 +50,7 @@ export function CommandHeader() {
                   className="h-20 w-auto object-contain"
                 />
                 {/* <Activity className="h-6 w-6 text-primary" /> */}
-                <h1 className="text-2xl font-bold text-foreground">
+                <h1 className="text-3xl font-bold text-foreground">
                   Supply Chain Command Center
                 </h1>
               </div>
